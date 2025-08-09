@@ -30,6 +30,7 @@ import { formSchema } from "@/src/lib/schema";
 type FormValues = z.infer<typeof formSchema>;
 
 export default function Home() {
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -93,7 +94,7 @@ export default function Home() {
     <div className="max-w-3xl mx-auto p-4">
       <Card className="border-none shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">CNG Station Daily Report</CardTitle>
+          <CardTitle className="text-2xl">Xpeed CNG Daily Report</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
