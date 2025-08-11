@@ -24,20 +24,7 @@ import { format } from "date-fns";
 import { InvoiceData } from "@/src/types";
 import { Invoice } from "@/src/modules/invoice";
 import { formSchema } from "@/src/lib/schema";
-
-// Constants for pricing and labels
-const PRICES = {
-  CNG: 43,
-  DIESEL: 102,
-  OCTANE: 122,
-  LPG: 62.459,
-};
-
-const SHIFT_LABELS = {
-  a: "Shift A (8AM-4PM)",
-  b: "Shift B (4PM-12AM)",
-  c: "Shift C (12AM-8AM)",
-};
+import { PRICES, SHIFT_LABELS } from "@/src/utils/constans";
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -77,7 +64,7 @@ export default function DailyReportForm() {
         acc[shift as "a" | "b" | "c"] = {
           sale,
           evc,
-          add: sale - evc,
+          add: evc - sale,
           taka: sale * PRICES.CNG,
           diesel,
           octane,

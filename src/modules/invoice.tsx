@@ -4,6 +4,7 @@ import { useReactToPrint } from "react-to-print";
 import { InvoiceData } from "../types";
 import { CalendarIcon, PrinterIcon, ArrowLeftIcon } from "lucide-react";
 import { Badge } from "../components/ui/badge";
+import { PRICES } from "../utils/constans";
 
 export const Invoice = ({
   invoiceData,
@@ -134,7 +135,9 @@ export const Invoice = ({
 
                   <div className="pt-3 mt-3 border-t border-gray-200">
                     <div className="flex justify-between">
-                      <span className="font-semibold">CNG Sales:</span>
+                      <span className="font-semibold">
+                        CNG Sales: (x{PRICES.CNG})
+                      </span>
                       <span className="font-bold text-primary">
                         {formatCurrency(invoiceData.shifts[shift].taka)}
                       </span>
@@ -169,7 +172,7 @@ export const Invoice = ({
           <div className="grid sm:grid-cols-3 gap-2 mb-6">
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="font-medium mb-4 pb-2 border-b border-gray-200">
-                Diesel Sales
+                Diesel Sales (x{PRICES.DIESEL})
               </h3>
 
               <div className="space-y-2">
@@ -211,7 +214,7 @@ export const Invoice = ({
 
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="font-medium mb-4 pb-2 border-b border-gray-200">
-                Octane Sales
+                Octane Sales (x{PRICES.OCTANE})
               </h3>
 
               <div className="space-y-2">
@@ -253,14 +256,14 @@ export const Invoice = ({
 
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="font-medium mb-4 pb-2 border-b border-gray-200">
-                LPG Sales
+                LPG Sales (x{PRICES.LPG})
               </h3>
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Sale:</span>
                   <span className="font-medium">
-                    {(invoiceData.lpg / 62.459).toFixed(2)} L
+                    {(invoiceData.lpg / PRICES.LPG).toFixed(2)} L
                   </span>
                 </div>
 
@@ -327,33 +330,31 @@ export const Invoice = ({
               </h3>
 
               <div className="pt-1 border-t border-gray-200">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Diesel/Octane Sale:</span>
-                    <span className="font-medium">
-                      {formatCurrency(
-                        invoiceData.dieselOctaneSale +
-                          invoiceData.dieselOctaneDue
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Diesel/Octane Due:</span>
-                    <span className="font-medium">
-                      {formatCurrency(invoiceData.dieselOctaneDue)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm my-1">
-                    <span className="text-gray-600">
-                      Diesel/Octane Cash Sale:
-                    </span>
-                    <span className="font-medium">
-                      {formatCurrency(
-                        invoiceData.dieselOctaneSale -
-                          invoiceData.dieselOctaneDue
-                      )}
-                    </span>
-                  </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Diesel/Octane Sale:</span>
+                  <span className="font-medium">
+                    {formatCurrency(
+                      invoiceData.dieselOctaneSale + invoiceData.dieselOctaneDue
+                    )}
+                  </span>
                 </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Diesel/Octane Due:</span>
+                  <span className="font-medium">
+                    {formatCurrency(invoiceData.dieselOctaneDue)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm my-1">
+                  <span className="text-gray-600">
+                    Diesel/Octane Cash Sale:
+                  </span>
+                  <span className="font-medium">
+                    {formatCurrency(
+                      invoiceData.dieselOctaneSale - invoiceData.dieselOctaneDue
+                    )}
+                  </span>
+                </div>
+              </div>
 
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold">Net Sales:</span>
