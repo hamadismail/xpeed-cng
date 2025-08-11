@@ -77,7 +77,7 @@ export default function DailyReportForm() {
         acc[shift as "a" | "b" | "c"] = {
           sale,
           evc,
-          add: evc - sale,
+          add: sale - evc,
           taka: sale * PRICES.CNG,
           diesel,
           octane,
@@ -92,6 +92,21 @@ export default function DailyReportForm() {
     // Calculate totals
     const totalCngSale = Object.values(shifts).reduce(
       (sum, shift) => sum + shift.taka,
+      0
+    );
+
+    const totalCngSaleVolume = Object.values(shifts).reduce(
+      (sum, shift) => sum + shift.sale,
+      0
+    );
+
+    const totalCngEvcVolume = Object.values(shifts).reduce(
+      (sum, shift) => sum + shift.evc,
+      0
+    );
+
+    const totalCngAddVolume = Object.values(shifts).reduce(
+      (sum, shift) => sum + shift.add,
       0
     );
 
@@ -114,9 +129,13 @@ export default function DailyReportForm() {
       lpg: lpgSale,
       lpgClosing: parseFloatOrZero(data.lpgClosing),
       dieselOctaneDue: parseFloatOrZero(data.dieselOctaneDue),
+      dieselOctaneSale: totalDieselSale + totalOctaneSale,
       totalCngSale,
       totalDieselSale,
       totalOctaneSale,
+      totalCngSaleVolume,
+      totalCngEvcVolume,
+      totalCngAddVolume,
       totalSale: totalCngSale + totalDieselSale + totalOctaneSale + lpgSale,
       date: format(new Date(), "PPP"),
     };
@@ -135,7 +154,7 @@ export default function DailyReportForm() {
       <Card className="border-none shadow-xl rounded-xl bg-gradient-to-br from-white to-gray-50">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-primary">
-            Xpeed CNG Daily Report
+            Xpeed Energy Resources Report
           </CardTitle>
           <p className="text-muted-foreground">
             {format(new Date(), "MMMM do, yyyy")}

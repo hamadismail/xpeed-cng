@@ -19,8 +19,12 @@ export type InvoiceData = {
   octaneClosing: number;
   lpgClosing: number;
   dieselOctaneDue: number;
+  dieselOctaneSale: number;
   lpg: number;
   totalCngSale: number;
+  totalCngSaleVolume: number;
+  totalCngEvcVolume: number;
+  totalCngAddVolume: number;
   totalDieselSale: number;
   totalOctaneSale: number;
   totalSale: number;

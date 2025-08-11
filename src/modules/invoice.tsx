@@ -68,7 +68,9 @@ export const Invoice = ({
         <div className="flex sm:flex-row justify-between items-start gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-primary">Xpeed CNG</h1>
+              <h1 className="text-xl font-bold text-primary">
+                Xpeed Energy Resources Ltd.
+              </h1>
               <Badge variant="secondary" className="text-xs">
                 Daily Sales Invoice
               </Badge>
@@ -143,11 +145,16 @@ export const Invoice = ({
             ))}
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold text-blue-800">Total CNG Sales</h3>
-              <span className="text-lg font-bold text-blue-900">
-                {formatCurrency(invoiceData.totalCngSale)}
+          <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <div className="flex justify-center items-center gap-4">
+              <span className="font-bold text-blue-900">
+                Total Sale {invoiceData.totalCngSaleVolume} m³ |
+              </span>
+              <span className="font-bold text-blue-900">
+                Total Evc {invoiceData.totalCngEvcVolume} m³ |
+              </span>
+              <span className="font-bold text-blue-900">
+                Total Add {invoiceData.totalCngAddVolume} m³
               </span>
             </div>
           </div>
@@ -269,15 +276,6 @@ export const Invoice = ({
                     <span>{invoiceData.lpgClosing.toFixed(2)} L</span>
                   </div>
                 </div>
-
-                <div className="pt-3 mt-3 border-t border-gray-200">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Diesel/Octane Due:</span>
-                    <span className="font-medium">
-                      {formatCurrency(invoiceData.dieselOctaneDue)}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -324,18 +322,47 @@ export const Invoice = ({
             </div>
 
             <div className="bg-primary/5 p-4 rounded-lg border border-primary/10">
-              <h3 className="font-medium text-lg mb-3 text-primary">
+              <h3 className="font-medium text-lg mb-1 text-primary">
                 Grand Total
               </h3>
 
+              <div className="pt-1 border-t border-gray-200">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Diesel/Octane Sale:</span>
+                    <span className="font-medium">
+                      {formatCurrency(
+                        invoiceData.dieselOctaneSale +
+                          invoiceData.dieselOctaneDue
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Diesel/Octane Due:</span>
+                    <span className="font-medium">
+                      {formatCurrency(invoiceData.dieselOctaneDue)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm my-1">
+                    <span className="text-gray-600">
+                      Diesel/Octane Cash Sale:
+                    </span>
+                    <span className="font-medium">
+                      {formatCurrency(
+                        invoiceData.dieselOctaneSale -
+                          invoiceData.dieselOctaneDue
+                      )}
+                    </span>
+                  </div>
+                </div>
+
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold">Net Sales:</span>
-                <span className="text-2xl font-bold text-primary">
+                <span className="text-xl font-bold text-primary">
                   {formatCurrency(invoiceData.totalSale)}
                 </span>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-primary/20 text-sm text-muted-foreground">
+              <div className="mt-1 pt-1 border-t border-primary/20 text-sm text-muted-foreground">
                 <p>Includes all fuel types and CNG sales</p>
               </div>
             </div>
