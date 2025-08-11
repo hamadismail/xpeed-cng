@@ -1,11 +1,10 @@
-"use client"
+"use client";
 
 // import Logo from "@/src/components/navbar-components/logo"
 import { Button } from "@/src/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
 } from "@/src/components/ui/navigation-menu";
 import {
@@ -13,23 +12,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/components/ui/popover";
+import { cn } from "@/src/lib/utils";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "/", label: "Home", active: true },
+  { href: "/", label: "Home" },
   { href: "/logs", label: "Logs" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
 
-  const isActive = (href: string) => {
-    // For home page, we need exact match
-    if (href === "/") return pathname === href;
-    // For other pages, check if pathname starts with href
-    return pathname.startsWith(href);
-  };
   return (
     <header className="border-b px-4 md:px-6">
       <div className="max-w-4xl mx-auto flex h-16 items-center justify-between gap-4">
@@ -75,13 +70,9 @@ export default function Navbar() {
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, index) => (
                     <NavigationMenuItem key={index} className="w-full">
-                      <NavigationMenuLink
-                        href={link.href}
-                        className="py-1.5"
-                        active={link.active}
-                      >
+                      <Link href={link.href} className="py-1.5">
                         {link.label}
-                      </NavigationMenuLink>
+                      </Link>
                     </NavigationMenuItem>
                   ))}
                 </NavigationMenuList>
@@ -98,13 +89,15 @@ export default function Navbar() {
               <NavigationMenuList className="gap-2">
                 {navigationLinks.map((link, index) => (
                   <NavigationMenuItem key={index}>
-                    <NavigationMenuLink
-                      active={isActive(link.href)}
+                    <Link
                       href={link.href}
-                      className="text-muted-foreground hover:text-primary py-1.5 font-medium"
+                      className={cn(
+                        "text-muted-foreground hover:text-primary py-1.5 font-medium",
+                        pathname === link.href ? "text-primary" : ""
+                      )}
                     >
                       {link.label}
-                    </NavigationMenuLink>
+                    </Link>
                   </NavigationMenuItem>
                 ))}
               </NavigationMenuList>
