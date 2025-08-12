@@ -7,6 +7,7 @@ import { Button } from "@/src/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,6 +26,14 @@ import { InvoiceData } from "@/src/types";
 import { Invoice } from "@/src/modules/invoice";
 import { formSchema } from "@/src/lib/schema";
 import { PRICES, SHIFT_LABELS } from "@/src/utils/constans";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/components/ui/popover";
+import { cn } from "@/src/lib/utils";
+import { Calendar } from "@/src/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -42,6 +51,7 @@ export default function DailyReportForm() {
       lpg: "",
       lpgClosing: "",
       dieselOctaneDue: "",
+      date: new Date(),
     },
   });
 
@@ -124,7 +134,7 @@ export default function DailyReportForm() {
       totalCngEvcVolume,
       totalCngAddVolume,
       totalSale: totalCngSale + totalDieselSale + totalOctaneSale + lpgSale,
-      date: format(new Date(), "PPP"),
+      date: format(new Date(data.date ), "PPP"),
     };
 
     setInvoiceData(invoice);
@@ -304,6 +314,48 @@ export default function DailyReportForm() {
                         placeholder="0.00"
                         {...field}
                       />
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Pick Date *</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-[240px] pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              captionLayout="dropdown"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormDescription className="sr-only">
+                          Your date is used.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
                     )}
                   />
                 </div>

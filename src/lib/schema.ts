@@ -26,4 +26,5 @@ export const formSchema = z.object({
   lpg: z.string().min(1, "lpg is required"),
   lpgClosing: z.string().min(1, "lpg Closing is required"),
   dieselOctaneDue: z.string().min(1, "Dues is required"),
+  date: z.date("Date is required"),
 });
