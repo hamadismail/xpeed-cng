@@ -10,6 +10,7 @@ export type ShiftData = {
 };
 
 export type InvoiceData = {
+  _id?: string;
   shifts: {
     a: ShiftData;
     b: ShiftData;
