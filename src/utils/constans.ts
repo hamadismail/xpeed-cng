@@ -2,7 +2,7 @@ export const PRICES = {
   CNG: 43,
   DIESEL: 102,
   OCTANE: 122,
-  LPG: 58.28,
+  LPG: 55.58,
 };
 
 export const SHIFT_LABELS = {
