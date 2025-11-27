@@ -75,9 +75,9 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
     0
   );
 
-  const invoiceNumber = `XP${Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, "0")}`;
+  // const invoiceNumber = `XP${Math.floor(Math.random() * 10000)
+  //   .toString()
+  //   .padStart(4, "0")}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-8">
@@ -112,7 +112,7 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
           className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden print:shadow-none print:border-0"
         >
           {/* Invoice Header */}
-          <div className="bg-gradient-to-r from-primary to-primary/90 text-white p-4 print:bg-primary">
+          <div className="bg-gradient-to-r from-primary to-primary/90 text-white p-2 print:bg-primary mb-2">
             <div className="flex justify-between items-start lg:items-center gap-4">
               <div className="flex items-center gap-4">
                 <div className="bg-white/20 p-2 rounded-2xl backdrop-blur-sm">
@@ -139,17 +139,17 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
                   </Badge>
                   <div className="flex items-center justify-center gap-2 text-white/90">
                     <CalendarIcon className="h-3 w-3" />
-                    <span className="font-semibold">{invoiceData.date}</span>
+                    <span className="font-semibold text-sm">{invoiceData.date}</span>
                   </div>
-                  <p className="text-sm text-white/80 mt-1">
+                  {/* <p className="text-sm text-white/80 mt-1">
                     Invoice #: {invoiceNumber}
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="p-8 space-y-6">
+          <div className="p-1 space-y-2">
             {/* CNG Sales Section */}
             <Card className="print-break border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow duration-200">
               <CardHeader className="pb-2">
