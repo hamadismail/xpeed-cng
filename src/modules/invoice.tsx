@@ -19,7 +19,6 @@ import {
 import { Separator } from "../components/ui/separator";
 
 import { InvoiceData } from "../types";
-import { PRICES } from "../utils/constans";
 
 interface InvoiceProps {
   invoiceData: InvoiceData;
@@ -165,7 +164,7 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
                       key={shift}
                       shift={shift}
                       data={invoiceData.shifts[shift]}
-                      price={PRICES.CNG}
+                      price={invoiceData.cngPrice}
                       type="cng"
                     />
                   ))}
@@ -205,7 +204,7 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
                 <div className="grid grid-cols-3 gap-2">
                   <FuelTypeCard
                     title="Diesel Sales"
-                    price={PRICES.DIESEL}
+                    price={invoiceData.dieselPrice}
                     shifts={invoiceData.shifts}
                     totalLitres={totalDieselLitres}
                     totalSale={invoiceData.totalDieselSale}
@@ -215,7 +214,7 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
 
                   <FuelTypeCard
                     title="Octane Sales"
-                    price={PRICES.OCTANE}
+                    price={invoiceData.octanePrice}
                     shifts={invoiceData.shifts}
                     totalLitres={totalOctaneLitres}
                     totalSale={invoiceData.totalOctaneSale}
@@ -225,7 +224,7 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
 
                   <FuelTypeCard
                     title="LPG Sales"
-                    price={PRICES.LPG}
+                    price={invoiceData.lpgPrice}
                     lpgData={{
                       sale: invoiceData.lpg,
                       closing: invoiceData.lpgClosing,

@@ -30,4 +30,8 @@ export type InvoiceData = {
   totalOctaneSale: number;
   totalSale: number;
   date: string;
+  cngPrice: number;
+  dieselPrice: number;
+  octanePrice: number;
+  lpgPrice: number;
 };

@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import { InvoiceData } from "../types";
-import { PRICES } from "./constans";
 
 export const generateInvoiceData = (log: InvoiceData): InvoiceData => {
   const parseFloatOrZero = (value?: string | number) =>
@@ -28,11 +27,11 @@ export const generateInvoiceData = (log: InvoiceData): InvoiceData => {
         sale,
         evc,
         add: evc - sale,
-        taka: sale * PRICES.CNG,
+        taka: sale * log.cngPrice,
         diesel,
         octane,
-        dieselPrice: diesel * PRICES.DIESEL,
-        octanePrice: octane * PRICES.OCTANE,
+        dieselPrice: diesel * log.dieselPrice,
+        octanePrice: octane * log.octanePrice,
       };
       return acc;
     },
@@ -51,10 +50,14 @@ export const generateInvoiceData = (log: InvoiceData): InvoiceData => {
     (sum, shift) => sum + shift.taka,
     0
   );
-  const lpgSale = parseFloatOrZero(log.lpg) * PRICES.LPG;
+  const lpgSale = parseFloatOrZero(log.lpg) * log.lpgPrice;
 
   return {
     shifts,
+    cngPrice: log.cngPrice,
+    dieselPrice: log.dieselPrice,
+    octanePrice: log.octanePrice,
+    lpgPrice: log.lpgPrice,
     dieselClosing: parseFloatOrZero(log.dieselClosing),
     octaneClosing: parseFloatOrZero(log.octaneClosing),
     lpg: lpgSale,

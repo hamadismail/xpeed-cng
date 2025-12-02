@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/src/lib/dbConnect';
 import Logs from '@/src/models/Logs';
+// import { PRICES } from '@/src/utils/constans';
 
 export async function POST(req: NextRequest) {
   await dbConnect();
@@ -53,3 +54,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error }, { status: 400 });
   }
 }
+
+// export async function PATCH() {
+//   await dbConnect();
+
+//   try {
+//     const result = await Logs.updateMany(
+//       {},
+//       {
+//         $set: {
+//           cngPrice: PRICES.CNG,
+//           dieselPrice: PRICES.DIESEL,
+//           octanePrice: PRICES.OCTANE,
+//           lpgPrice: PRICES.LPG,
+//         },
+//       }
+//     );
+
+//     return NextResponse.json(
+//       {
+//         success: true,
+//         data: { matchedCount: result.matchedCount, modifiedCount: result.modifiedCount },
+//       },
+//       { status: 200 }
+//     );
+//   } catch (error) {
+//     return NextResponse.json({ success: false, error }, { status: 400 });
+//   }
+// }
