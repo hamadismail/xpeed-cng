@@ -1,7 +1,7 @@
 export const PRICES = {
   CNG: 43,
-  DIESEL: 102,
-  OCTANE: 122,
+  DIESEL: 104,
+  OCTANE: 124,
   LPG: 55.58,
 };
 
