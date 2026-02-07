@@ -66,12 +66,12 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
   // Calculate totals
   const totalDieselLitres = Object.values(invoiceData.shifts).reduce(
     (sum, shift) => sum + shift.diesel,
-    0
+    0,
   );
 
   const totalOctaneLitres = Object.values(invoiceData.shifts).reduce(
     (sum, shift) => sum + shift.octane,
-    0
+    0,
   );
 
   // const invoiceNumber = `XP${Math.floor(Math.random() * 10000)
@@ -134,11 +134,13 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
                     className="bg-white text-primary mb-2 font-semibold"
                   >
                     <Receipt className="h-2 w-2 mr-1" />
-                    DAILY SALES INVOICE
+                    INVOICE: {invoiceData?._id?.toUpperCase() || ""}
                   </Badge>
                   <div className="flex items-center justify-center gap-2 text-white/90">
                     <CalendarIcon className="h-3 w-3" />
-                    <span className="font-semibold text-sm">{invoiceData.date}</span>
+                    <span className="font-semibold text-sm">
+                      {invoiceData.date}
+                    </span>
                   </div>
                   {/* <p className="text-sm text-white/80 mt-1">
                     Invoice #: {invoiceNumber}
@@ -295,7 +297,7 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
                         <span className="font-medium">
                           {formatCurrency(
                             invoiceData.dieselOctaneSale +
-                              invoiceData.dieselOctaneDue
+                              invoiceData.dieselOctaneDue,
                           )}
                         </span>
                       </div>
@@ -314,7 +316,7 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
                         <span className="font-medium text-green-600">
                           {formatCurrency(
                             invoiceData.dieselOctaneSale -
-                              invoiceData.dieselOctaneDue
+                              invoiceData.dieselOctaneDue,
                           )}
                         </span>
                       </div>

@@ -15,8 +15,8 @@ export const generateInvoiceData = (log: InvoiceData): InvoiceData => {
           evc?: string | number;
           diesel?: string | number;
           octane?: string | number;
-        }
-      ]
+        },
+      ],
     ) => {
       const sale = parseFloatOrZero(values?.sale);
       const evc = parseFloatOrZero(values?.evc);
@@ -35,24 +35,25 @@ export const generateInvoiceData = (log: InvoiceData): InvoiceData => {
       };
       return acc;
     },
-    {} as InvoiceData["shifts"]
+    {} as InvoiceData["shifts"],
   );
 
   const totalDieselSale = Object.values(shifts).reduce(
     (sum, shift) => sum + shift.dieselPrice,
-    0
+    0,
   );
   const totalOctaneSale = Object.values(shifts).reduce(
     (sum, shift) => sum + shift.octanePrice,
-    0
+    0,
   );
   const totalCngSale = Object.values(shifts).reduce(
     (sum, shift) => sum + shift.taka,
-    0
+    0,
   );
   const lpgSale = parseFloatOrZero(log.lpg) * log.lpgPrice;
 
   return {
+    _id: log._id,
     shifts,
     cngPrice: log.cngPrice,
     dieselPrice: log.dieselPrice,
@@ -69,15 +70,15 @@ export const generateInvoiceData = (log: InvoiceData): InvoiceData => {
     totalOctaneSale,
     totalCngSaleVolume: Object.values(shifts).reduce(
       (sum, shift) => sum + shift.sale,
-      0
+      0,
     ),
     totalCngEvcVolume: Object.values(shifts).reduce(
       (sum, shift) => sum + shift.evc,
-      0
+      0,
     ),
     totalCngAddVolume: Object.values(shifts).reduce(
       (sum, shift) => sum + shift.add,
-      0
+      0,
     ),
     totalSale: totalCngSale + totalDieselSale + totalOctaneSale + lpgSale,
     date: format(new Date(log.date), "PPP"),
