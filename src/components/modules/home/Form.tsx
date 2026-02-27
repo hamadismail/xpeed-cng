@@ -8,7 +8,7 @@ import { z } from "zod";
 
 import { Invoice } from "@/src/modules/invoice";
 import { formSchema } from "@/src/lib/schema";
-import { PRICES, SHIFT_LABELS } from "@/src/utils/constans";
+import { SHIFT_LABELS } from "@/src/utils/constans";
 import { generateInvoiceData } from "@/src/utils/generate-invoice-data";
 import { InvoiceData } from "@/src/types";
 
@@ -56,21 +56,13 @@ export default function DailyReportForm() {
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
 
-    const payload = {
-      ...data,
-      cngPrice: PRICES.CNG,
-      dieselPrice: PRICES.DIESEL,
-      octanePrice: PRICES.OCTANE,
-      lpgPrice: PRICES.LPG,
-    };
-
     try {
       const response = await fetch("/api/logs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {

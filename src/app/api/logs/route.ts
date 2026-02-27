@@ -1,14 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/src/lib/dbConnect';
 import Logs from '@/src/models/Logs';
-// import { PRICES } from '@/src/utils/constans';
+import Prices from '@/src/models/Prices';
+import { PRICES } from '@/src/utils/constans';
 
 export async function POST(req: NextRequest) {
   await dbConnect();
 
   try {
     const body = await req.json();
-    const log = await Logs.create(body);
+
+    // Fetch the latest prices from the database
+    const latestPrices = await Prices.findOne().sort({ createdAt: -1 });
+
+    const pricesToUse = {
+      cngPrice: latestPrices?.CNG ?? PRICES.CNG,
+      dieselPrice: latestPrices?.DIESEL ?? PRICES.DIESEL,
+      octanePrice: latestPrices?.OCTANE ?? PRICES.OCTANE,
+      lpgPrice: latestPrices?.LPG ?? PRICES.LPG,
+    };
+
+    const logData = {
+      ...body,
+      ...pricesToUse,
+    };
+
+    const log = await Logs.create(logData);
     return NextResponse.json({ success: true, data: log }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, error }, { status: 400 });
