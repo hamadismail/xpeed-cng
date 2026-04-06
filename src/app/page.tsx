@@ -1,13 +1,9 @@
 "use client";
 
-import type { ComponentType } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
-  ChartColumnIncreasing,
-  ClipboardList,
-  Gauge,
   Plus,
   Settings2,
   Sparkles,
@@ -90,26 +86,11 @@ export default function HomePage() {
     fetchPrices();
   }, []);
 
-  const stationMetrics = useMemo(() => {
-    const activePrices = prices ?? PRICES;
-    const values = Object.values(activePrices);
-    const average =
-      values.reduce((sum, value) => sum + value, 0) / values.length;
-    const highest = Math.max(...values);
-    const lowest = Math.min(...values);
-
-    return {
-      average,
-      spread: highest - lowest,
-      products: values.length,
-    };
-  }, [prices]);
-
   return (
     <div className="page-shell space-y-8">
       <section className="page-hero">
         <div className="absolute inset-y-0 right-0 hidden w-md bg-[radial-gradient(circle_at_center,rgba(12,120,102,0.18),transparent_62%)] lg:block" />
-        <div className="relative grid gap-8 lg:grid-cols-[1.4fr_0.9fr] lg:items-end">
+        <div className="relative grid gap-8 lg:grid-cols-[1.4fr_0.9fr] lg:items-start">
           <div className="space-y-6">
             <Badge className="rounded-full border-0 bg-primary/10 px-4 py-1.5 text-primary hover:bg-primary/10">
               Live operations dashboard
@@ -125,6 +106,42 @@ export default function HomePage() {
                 quickly, and keep the station team working from one polished
                 operational surface.
               </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="section-label">Current rates</p>
+                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+                    Today&apos;s fuel pricing board
+                  </h2>
+                </div>
+                <p className="max-w-lg text-sm leading-6 text-muted-foreground">
+                  Live values used for new entries and invoice generation.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {isLoading
+                  ? fuelMeta.map((item) => (
+                      <Skeleton
+                        key={item.key}
+                        className="h-36 rounded-3xl"
+                      />
+                    ))
+                  : fuelMeta.map((item) => (
+                      <PriceCard
+                        key={item.key}
+                        label={item.key}
+                        price={prices?.[item.key] ?? PRICES[item.key]}
+                        unit={item.unit}
+                        tint={item.tint}
+                        accent={item.accent}
+                        description={item.description}
+                        compact
+                      />
+                    ))}
+              </div>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -145,24 +162,6 @@ export default function HomePage() {
                   Create daily entry
                 </Link>
               </Button>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <StationMetric
-                icon={Gauge}
-                label="Average active rate"
-                value={`৳${stationMetrics.average.toFixed(2)}`}
-              />
-              <StationMetric
-                icon={ChartColumnIncreasing}
-                label="Price spread"
-                value={`৳${stationMetrics.spread.toFixed(2)}`}
-              />
-              <StationMetric
-                icon={ClipboardList}
-                label="Managed products"
-                value={stationMetrics.products.toString()}
-              />
             </div>
           </div>
 
@@ -218,39 +217,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="space-y-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="section-label">Current rates</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-              Today&apos;s fuel pricing board
-            </h2>
-          </div>
-          <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-            Each card reflects the current system value used for new entries and
-            invoice generation.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {isLoading
-            ? fuelMeta.map((item) => (
-                <Skeleton key={item.key} className="h-52 rounded-[1.75rem]" />
-              ))
-            : fuelMeta.map((item) => (
-                <PriceCard
-                  key={item.key}
-                  label={item.key}
-                  price={prices?.[item.key] ?? PRICES[item.key]}
-                  unit={item.unit}
-                  tint={item.tint}
-                  accent={item.accent}
-                  description={item.description}
-                />
-              ))}
-        </div>
-      </section>
-
       <PriceUpdateModal
         isOpen={isPriceModalOpen}
         onOpenChange={setIsPriceModalOpen}
@@ -267,7 +233,8 @@ function PriceCard({
   unit,
   tint,
   accent,
-  description,
+  // description,
+  compact = false,
 }: {
   label: string;
   price: number;
@@ -275,24 +242,29 @@ function PriceCard({
   tint: string;
   accent: string;
   description: string;
+  compact?: boolean;
 }) {
   return (
-    <Card
-      className={`overflow-hidden border-white/80 bg-linear-to-br ${tint}`}
-    >
-      <CardContent className="flex h-full flex-col gap-8 p-6">
+    <Card className={`overflow-hidden border-white/80 bg-linear-to-br ${tint}`}>
+      <CardContent
+        className={`flex h-full flex-col ${compact ? "gap-4 p-4" : "gap-8 p-6"}`}
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="section-label">{label}</p>
-            <h3 className="mt-2 text-xl font-semibold text-foreground">
+            {/* <h3
+              className={`mt-2 font-semibold text-foreground ${compact ? "text-base" : "text-xl"}`}
+            >
               {description}
-            </h3>
+            </h3> */}
           </div>
           <span className={`mt-1 h-3 w-3 rounded-full ${accent}`} />
         </div>
 
         <div className="space-y-2">
-          <div className="metric-value">৳{price.toFixed(2)}</div>
+          <div className={compact ? "font-mono text-2xl font-semibold tracking-tight text-foreground" : "metric-value"}>
+            ৳{price.toFixed(2)}
+          </div>
           <p className="text-sm text-muted-foreground">Applied per {unit}</p>
         </div>
       </CardContent>
@@ -300,31 +272,6 @@ function PriceCard({
   );
 }
 
-function StationMetric({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-3xl border border-white/70 bg-white/72 p-4 shadow-[0_20px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <Icon className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="font-mono text-lg font-semibold text-foreground">
-            {value}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function HighlightCard({ label, value }: { label: string; value: string }) {
   return (

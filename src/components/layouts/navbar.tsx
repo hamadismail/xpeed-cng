@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BarChart3, ChevronRight, FilePlus2, Fuel, Home, Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  BarChart3,
+  FilePlus2,
+  Fuel,
+  Home,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
 import {
@@ -11,7 +19,13 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
 } from "@/src/components/ui/navigation-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/src/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/src/components/ui/sheet";
 import { cn } from "@/src/lib/utils";
 
 const navigationLinks = [
@@ -31,9 +45,27 @@ const navigationLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const closeSheet = () => setIsOpen(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      router.replace("/login");
+      router.refresh();
+      setIsLoggingOut(false);
+    }
+  };
+
+  if (pathname === "/login") {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -92,17 +124,29 @@ export default function Navbar() {
             </div>
 
             <div className="hidden items-center gap-3 lg:flex">
-              <Button asChild variant="outline" className="rounded-full border-white/70 bg-white/70 px-4">
+              {/* <Button asChild variant="outline" className="rounded-full border-white/70 bg-white/70 px-4">
                 <Link href="/logs">
                   Review Logs
                   <ChevronRight className="h-4 w-4" />
                 </Link>
-              </Button>
-              <Button asChild className="rounded-full px-5 shadow-[0_18px_30px_-18px_rgba(9,82,70,0.85)]">
+              </Button> */}
+              <Button
+                asChild
+                className="rounded-full px-5 shadow-[0_18px_30px_-18px_rgba(9,82,70,0.85)]"
+              >
                 <Link href="/logs/new">
                   <FilePlus2 className="h-4 w-4" />
                   New Entry
                 </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                className="rounded-full px-4 text-muted-foreground hover:text-foreground"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+              >
+                <LogOut className="h-4 w-4" />
+                {isLoggingOut ? "Signing out..." : "Logout"}
               </Button>
             </div>
 
@@ -119,13 +163,21 @@ export default function Navbar() {
                     className="h-10 w-10 rounded-full border-white/70 bg-white/80"
                     aria-label="Toggle menu"
                   >
-                    {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                    {isOpen ? (
+                      <X className="h-5 w-5" />
+                    ) : (
+                      <Menu className="h-5 w-5" />
+                    )}
                   </Button>
                 </SheetTrigger>
                 <SheetContent
                   side="right"
-                  className="w-[300px] border-l-white/70 bg-[rgba(250,248,242,0.96)] px-6 backdrop-blur"
+                  className="w-75 border-l-white/70 bg-[rgba(250,248,242,0.96)] px-6 backdrop-blur"
                 >
+                  <SheetTitle className="sr-only">Navigation menu</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Access dashboard pages and account actions.
+                  </SheetDescription>
                   <div className="flex h-full flex-col gap-6 pt-8">
                     <div className="space-y-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
@@ -139,7 +191,8 @@ export default function Navbar() {
                           Operations workspace
                         </h2>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          Daily reporting, current pricing and invoice generation in one place.
+                          Daily reporting, current pricing and invoice
+                          generation in one place.
                         </p>
                       </div>
                     </div>
@@ -161,22 +214,30 @@ export default function Navbar() {
                                 : "border-transparent bg-white/70 hover:border-border hover:bg-white",
                             )}
                           >
-                            <div className={cn(
-                              "mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl",
-                              isActive ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground",
-                            )}>
+                            <div
+                              className={cn(
+                                "mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl",
+                                isActive
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-secondary text-foreground",
+                              )}
+                            >
                               <Icon className="h-4 w-4" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="font-medium text-foreground">{link.label}</p>
-                              <p className="text-sm text-muted-foreground">{link.description}</p>
+                              <p className="font-medium text-foreground">
+                                {link.label}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {link.description}
+                              </p>
                             </div>
                           </Link>
                         );
                       })}
                     </nav>
 
-                    <div className="mt-auto space-y-3 rounded-[1.5rem] border border-border/80 bg-white/75 p-4">
+                    <div className="mt-auto space-y-3 rounded-3xl border border-border/80 bg-white/75 p-4">
                       <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-center text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
                         Station operational
                       </div>
@@ -185,6 +246,18 @@ export default function Navbar() {
                           <FilePlus2 className="h-4 w-4" />
                           Create daily entry
                         </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full rounded-full"
+                        onClick={() => {
+                          closeSheet();
+                          void handleLogout();
+                        }}
+                        disabled={isLoggingOut}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        {isLoggingOut ? "Signing out..." : "Logout"}
                       </Button>
                     </div>
                   </div>

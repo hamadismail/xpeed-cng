@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ensureAdminSeeded } from "@/src/lib/seed-admin";
 
 const MONGODB_URI = process.env.MONGODB_URI as string;
 if (!MONGODB_URI) {
@@ -32,6 +33,7 @@ async function dbConnect() {
   }
 
   cached.conn = await cached.promise;
+  await ensureAdminSeeded();
   return cached.conn;
 }
 
