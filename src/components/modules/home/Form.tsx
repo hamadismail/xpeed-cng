@@ -86,7 +86,7 @@ export default function DailyReportForm() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="page-shell space-y-6">
       <Card className="glass-panel overflow-hidden border-white/70 bg-white/82">
         <CardHeader className="gap-5 border-b border-border/70 pb-6">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
