@@ -2,13 +2,18 @@ import React from "react";
 
 export default function Loading() {
   return (
-    <div className="flex items-center justify-center h-full min-h-[200px]">
-      <div className="relative w-12 h-12">
-        {/* Outer ring */}
-        <div className="absolute w-full h-full rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
-
-        {/* Inner dot */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
+    <div className="page-shell">
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <div className="glass-panel flex items-center gap-4 rounded-full px-6 py-4">
+          <div className="relative h-10 w-10">
+            <div className="absolute inset-0 rounded-full border-[3px] border-primary/20" />
+            <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
+          </div>
+          <div>
+            <p className="section-label">Loading</p>
+            <p className="text-sm text-muted-foreground">Preparing the station workspace...</p>
+          </div>
+        </div>
       </div>
     </div>
   );

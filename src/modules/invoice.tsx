@@ -1,11 +1,10 @@
-import { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
+import type { ComponentType } from "react";
 import {
-  CalendarIcon,
-  PrinterIcon,
   ArrowLeftIcon,
-  Building2,
-  Receipt,
+  CalendarIcon,
+  Fuel,
+  PrinterIcon,
+  ReceiptText,
 } from "lucide-react";
 
 import { Button } from "../components/ui/button";
@@ -17,7 +16,6 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
-
 import { InvoiceData } from "../types";
 
 interface InvoiceProps {
@@ -26,34 +24,26 @@ interface InvoiceProps {
 }
 
 export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
-  const contentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = `Xpeed_Invoice_${invoiceData.date.replace(/\//g, "-")}`;
 
-  const handlePrint = useReactToPrint({
-    contentRef,
-    documentTitle: `Xpeed_Invoice_${invoiceData.date.replace(/\//g, "-")}`,
-    pageStyle: `
-      @page {
-        size: A4;
-        margin: 0.2in;
-      }
-      @media print {
-        body {
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        .no-print {
-          display: none !important;
-        }
-        .print-break {
-          page-break-inside: avoid;
-        }
-      }
-    `,
-  });
+    requestAnimationFrame(() => {
+      window.print();
+      window.setTimeout(() => {
+        document.title = originalTitle;
+      }, 300);
+    });
+  };
 
-  // Format currency with Bangladeshi Taka symbol
-  const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat("en-BD", {
+  const formatNumber = (value: number): string =>
+    new Intl.NumberFormat("en-IN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value);
+
+  const formatCurrency = (value: number): string =>
+    new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "BDT",
       minimumFractionDigits: 0,
@@ -61,300 +51,226 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
     })
       .format(value)
       .replace("BDT", "৳");
-  };
 
-  // Calculate totals
   const totalDieselLitres = Object.values(invoiceData.shifts).reduce(
     (sum, shift) => sum + shift.diesel,
     0,
   );
-
   const totalOctaneLitres = Object.values(invoiceData.shifts).reduce(
     (sum, shift) => sum + shift.octane,
     0,
   );
-
-  // const invoiceNumber = `XP${Math.floor(Math.random() * 10000)
-  //   .toString()
-  //   .padStart(4, "0")}`;
+  const cashSale = invoiceData.dieselOctaneSale - invoiceData.dieselOctaneDue;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Action Buttons - Hidden during print */}
-        <div className="no-print flex justify-between items-center mb-6">
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="gap-2 hover:shadow-md transition-all duration-200"
-            size="lg"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to Records
-          </Button>
+    <div className="page-shell space-y-6 print:max-w-none print:px-0 print:py-0">
+      <div className="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Button
+          onClick={onBack}
+          variant="outline"
+          className="h-11 rounded-full border-white/80 bg-white/80 px-4"
+          size="lg"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+          Back to records
+        </Button>
+        <Button
+          onClick={handlePrint}
+          className="h-11 rounded-full px-5 shadow-[0_18px_30px_-18px_rgba(9,82,70,0.85)]"
+          size="lg"
+        >
+          <PrinterIcon className="h-4 w-4" />
+          Print invoice
+        </Button>
+      </div>
 
-          <div className="flex gap-3">
-            <Button
-              onClick={handlePrint}
-              className="gap-2 hover:shadow-lg transition-all duration-200 bg-primary hover:bg-primary/90"
-              size="lg"
-            >
-              <PrinterIcon className="h-4 w-4" />
-              Print Invoice
-            </Button>
+      <div className="overflow-hidden rounded-4xl border border-white/70 bg-white shadow-[0_32px_100px_-58px_rgba(15,23,42,0.55)] print:rounded-none print:border-0 print:shadow-none">
+        <div className="border-b border-border/70 bg-[linear-gradient(135deg,rgba(12,120,102,0.1),rgba(188,149,78,0.12))] px-6 py-6 sm:px-8 print:p-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between print:flex-col">
+            <div className="space-y-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                <Fuel className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="section-label text-primary/70">
+                  Xpeed Energy Resources Ltd.
+                </p>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
+                  Daily station invoice
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  Daudkandi, Comilla. Consolidated statement of station
+                  activity, fuel sales, and closing balances for the selected
+                  day.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 print:grid-cols-2">
+              <InvoiceInfo
+                icon={ReceiptText}
+                label="Invoice reference"
+                value={invoiceData?._id?.toUpperCase() || "N/A"}
+              />
+              <InvoiceInfo
+                icon={CalendarIcon}
+                label="Report date"
+                value={invoiceData.date}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Invoice Container */}
-        <div
-          ref={contentRef}
-          className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden print:shadow-none print:border-0"
-        >
-          {/* Invoice Header */}
-          <div className="bg-gradient-to-r from-primary to-primary/90 text-white p-2 print:bg-primary mb-2">
-            <div className="flex justify-between items-start lg:items-center gap-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-white/20 p-2 rounded-2xl backdrop-blur-sm">
-                  <Building2 className="h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight">
-                    Xpeed Energy Resources Ltd.
-                  </h1>
-                  <p className="text-primary-foreground/90 mt-1 text-sm">
-                    Daudkandi, Comilla • +880 000 0000000
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="text-center">
-                  <Badge
-                    variant="secondary"
-                    className="bg-white text-primary mb-2 font-semibold"
-                  >
-                    <Receipt className="h-2 w-2 mr-1" />
-                    INVOICE: {invoiceData?._id?.toUpperCase() || ""}
-                  </Badge>
-                  <div className="flex items-center justify-center gap-2 text-white/90">
-                    <CalendarIcon className="h-3 w-3" />
-                    <span className="font-semibold text-sm">
-                      {invoiceData.date}
-                    </span>
-                  </div>
-                  {/* <p className="text-sm text-white/80 mt-1">
-                    Invoice #: {invoiceNumber}
-                  </p> */}
-                </div>
-              </div>
-            </div>
+        <div className="space-y-6 p-6 sm:p-8 print:p-0">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 print:grid-cols-3">
+            <MetricPanel
+              label="Total CNG sale"
+              value={formatCurrency(invoiceData.totalCngSale)}
+            />
+            <MetricPanel
+              label="Diesel + octane sale"
+              value={formatCurrency(invoiceData.dieselOctaneSale)}
+            />
+            <MetricPanel
+              label="Grand total"
+              value={formatCurrency(invoiceData.totalSale)}
+            />
           </div>
 
-          <div className="p-1 space-y-2">
-            {/* CNG Sales Section */}
-            <Card className="print-break border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-xl text-blue-900">
-                  <div className="w-2 h-6 bg-blue-500 rounded-full" />
-                  CNG Sales Breakdown
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-2">
-                  {(["a", "b", "c"] as const).map((shift) => (
-                    <ShiftCard
-                      key={shift}
-                      shift={shift}
-                      data={invoiceData.shifts[shift]}
-                      price={invoiceData.cngPrice}
-                      type="cng"
-                    />
-                  ))}
+          <Card className="border-border/70 bg-secondary/35 shadow-none print:break-after-page">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-semibold tracking-tight text-foreground">
+                CNG shift breakdown
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 lg:grid-cols-3 print:grid-cols-3">
+                {(["a", "b", "c"] as const).map((shift) => (
+                  <ShiftCard
+                    key={shift}
+                    shift={shift}
+                    data={invoiceData.shifts[shift]}
+                    price={invoiceData.cngPrice}
+                    formatNumber={formatNumber}
+                    formatCurrency={formatCurrency}
+                  />
+                ))}
+              </div>
+              <div className="grid gap-3 md:grid-cols-3 print:grid-cols-3">
+                <SummaryBox
+                  label="Sale volume"
+                  value={`${formatNumber(invoiceData.totalCngSaleVolume)} m³`}
+                />
+                <SummaryBox
+                  label="EVC volume"
+                  value={`${formatNumber(invoiceData.totalCngEvcVolume)} m³`}
+                />
+                <SummaryBox
+                  label="Add volume"
+                  value={`${formatNumber(invoiceData.totalCngAddVolume)} m³`}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-4 xl:grid-cols-3 print:grid-cols-3">
+            <FuelTypeCard
+              title="Diesel"
+              price={invoiceData.dieselPrice}
+              shifts={invoiceData.shifts}
+              totalLitres={totalDieselLitres}
+              totalSale={invoiceData.totalDieselSale}
+              closingStock={invoiceData.dieselClosing}
+              type="diesel"
+              formatNumber={formatNumber}
+              formatCurrency={formatCurrency}
+            />
+            <FuelTypeCard
+              title="Octane"
+              price={invoiceData.octanePrice}
+              shifts={invoiceData.shifts}
+              totalLitres={totalOctaneLitres}
+              totalSale={invoiceData.totalOctaneSale}
+              closingStock={invoiceData.octaneClosing}
+              type="octane"
+              formatNumber={formatNumber}
+              formatCurrency={formatCurrency}
+            />
+            <FuelTypeCard
+              title="LPG"
+              price={invoiceData.lpgPrice}
+              lpgData={{
+                sale: invoiceData.lpg,
+                closing: invoiceData.lpgClosing,
+              }}
+              type="lpg"
+              formatNumber={formatNumber}
+              formatCurrency={formatCurrency}
+            />
+          </div>
+
+          <Card className="border-border/70 bg-white shadow-none">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-semibold tracking-tight text-foreground">
+                Financial summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] print:grid-cols-[1.15fr_0.85fr]">
+                <div className="space-y-3">
+                  <SummaryLine
+                    label="CNG sales"
+                    value={formatCurrency(invoiceData.totalCngSale)}
+                  />
+                  <SummaryLine
+                    label="Diesel sales"
+                    value={formatCurrency(invoiceData.totalDieselSale)}
+                  />
+                  <SummaryLine
+                    label="Octane sales"
+                    value={formatCurrency(invoiceData.totalOctaneSale)}
+                  />
+                  <SummaryLine
+                    label="LPG amount"
+                    value={formatCurrency(invoiceData.lpg)}
+                  />
+                  <SummaryLine
+                    label="Diesel + octane due"
+                    value={formatCurrency(invoiceData.dieselOctaneDue)}
+                  />
                 </div>
 
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <MetricItem
-                      label="Total Sale Volume"
-                      value={`${invoiceData.totalCngSaleVolume.toFixed(2)} m³`}
-                      className="text-blue-700"
+                <div className="rounded-[1.6rem] border border-border/70 bg-secondary/40 p-6">
+                  <p className="section-label">Cash position</p>
+                  <div className="mt-4 space-y-3 text-sm">
+                    <KeyValue
+                      label="Fuel sale total"
+                      value={formatCurrency(invoiceData.dieselOctaneSale)}
                     />
-                    <MetricItem
-                      label="Total EVC Volume"
-                      value={`${invoiceData.totalCngEvcVolume.toFixed(2)} m³`}
-                      className="text-blue-700"
+                    <KeyValue
+                      label="Outstanding due"
+                      value={formatCurrency(invoiceData.dieselOctaneDue)}
                     />
-                    <MetricItem
-                      label="Total Add Volume"
-                      value={`${invoiceData.totalCngAddVolume.toFixed(2)} m³`}
-                      className="text-blue-700"
+                    <KeyValue
+                      label="Cash sale"
+                      value={formatCurrency(cashSale)}
                     />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Fuel Sales Section */}
-            <Card className="print-break border-l-4 border-l-green-500 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-xl text-green-900">
-                  <div className="w-2 h-6 bg-green-500 rounded-full" />
-                  Fuel Sales Breakdown
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-2">
-                  <FuelTypeCard
-                    title="Diesel Sales"
-                    price={invoiceData.dieselPrice}
-                    shifts={invoiceData.shifts}
-                    totalLitres={totalDieselLitres}
-                    totalSale={invoiceData.totalDieselSale}
-                    closingStock={invoiceData.dieselClosing}
-                    type="diesel"
-                  />
-
-                  <FuelTypeCard
-                    title="Octane Sales"
-                    price={invoiceData.octanePrice}
-                    shifts={invoiceData.shifts}
-                    totalLitres={totalOctaneLitres}
-                    totalSale={invoiceData.totalOctaneSale}
-                    closingStock={invoiceData.octaneClosing}
-                    type="octane"
-                  />
-
-                  <FuelTypeCard
-                    title="LPG Sales"
-                    price={invoiceData.lpgPrice}
-                    lpgData={{
-                      sale: invoiceData.lpg,
-                      closing: invoiceData.lpgClosing,
-                    }}
-                    type="lpg"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Summary Section */}
-            <Card className="print-break border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-xl text-purple-900">
-                  <div className="w-2 h-6 bg-purple-500 rounded-full" />
-                  Daily Financial Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Sales Breakdown */}
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-lg text-gray-900">
-                      Sales Breakdown
-                    </h4>
-                    <div className="space-y-3">
-                      <SummaryItem
-                        label="CNG Sales"
-                        value={invoiceData.totalCngSale}
-                        formatCurrency={formatCurrency}
-                        className="border-l-4 border-l-blue-400"
-                      />
-                      <SummaryItem
-                        label="Diesel Sales"
-                        value={invoiceData.totalDieselSale}
-                        formatCurrency={formatCurrency}
-                        className="border-l-4 border-l-green-400"
-                      />
-                      <SummaryItem
-                        label="Octane Sales"
-                        value={invoiceData.totalOctaneSale}
-                        formatCurrency={formatCurrency}
-                        className="border-l-4 border-l-orange-400"
-                      />
-                      <SummaryItem
-                        label="LPG Sales"
-                        value={invoiceData.lpg}
-                        formatCurrency={formatCurrency}
-                        className="border-l-4 border-l-red-400"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Grand Total */}
-                  <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
-                    <div className="text-center mb-6">
-                      <h4 className="text-2xl font-bold text-primary">
-                        Grand Total
-                      </h4>
-                      <p className="text-muted-foreground">Net Daily Sales</p>
-                    </div>
-
-                    <div className="space-y-3 mb-6">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground">
-                          Diesel/Octane Sale:
-                        </span>
-                        <span className="font-medium">
-                          {formatCurrency(
-                            invoiceData.dieselOctaneSale +
-                              invoiceData.dieselOctaneDue,
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground">
-                          Diesel/Octane Due:
-                        </span>
-                        <span className="font-medium text-amber-600">
-                          {formatCurrency(invoiceData.dieselOctaneDue)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground">
-                          Cash Sale:
-                        </span>
-                        <span className="font-medium text-green-600">
-                          {formatCurrency(
-                            invoiceData.dieselOctaneSale -
-                              invoiceData.dieselOctaneDue,
-                          )}
-                        </span>
-                      </div>
-                      <Separator />
-                    </div>
-
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary mb-2">
-                        {formatCurrency(invoiceData.totalSale)}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Total net sales including all fuel types
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Footer */}
-            <div className="pt-6 border-t border-slate-200">
-              <div className="flex justify-between items-center gap-4 text-center md:text-left">
-                <div className="text-muted-foreground">
-                  <p className="font-medium">
-                    Generated by Xpeed CNG Station Management System
+                  <Separator className="my-5" />
+                  <p className="font-mono text-3xl font-semibold tracking-tight text-foreground">
+                    {formatCurrency(invoiceData.totalSale)}
                   </p>
-                  <p>Email: info@xpeedcng.com • Website: www.xpeedcng.com</p>
-                </div>
-
-                <div className="text-muted-foreground">
-                  <p className="font-medium">Thank you for your business!</p>
-                  <p>
-                    © {new Date().getFullYear()} Xpeed Energy Resources Ltd. All
-                    rights reserved.
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Total net sales including CNG, diesel, octane, and LPG.
                   </p>
                 </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex flex-col gap-3 border-t border-border/70 pt-5 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between print:flex-row print:items-center print:justify-between">
+            <p>Generated by the Xpeed CNG station management system.</p>
+            <p>© {new Date().getFullYear()} Xpeed Energy Resources Ltd.</p>
           </div>
         </div>
       </div>
@@ -362,63 +278,78 @@ export const Invoice = ({ invoiceData, onBack }: InvoiceProps) => {
   );
 };
 
-// Supporting Components
-interface ShiftCardProps {
-  shift: "a" | "b" | "c";
-  data: InvoiceData["shifts"][keyof InvoiceData["shifts"]];
-  price: number;
-  type: "cng";
-}
-
-const ShiftCard = ({ shift, data, price }: ShiftCardProps) => (
-  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 hover:border-slate-300 transition-colors duration-200">
-    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200">
-      <Badge
-        variant="outline"
-        className="bg-primary text-primary-foreground font-semibold"
-      >
-        {shift.toUpperCase()} SHIFT
-      </Badge>
-      <span className="text-sm font-medium text-slate-600">Details</span>
-    </div>
-
-    <div className="space-y-2 text-sm">
-      <MetricRow label="Sale Volume:" value={`${data.sale.toFixed(2)} m³`} />
-      <MetricRow label="EVC Volume:" value={`${data.evc.toFixed(2)} m³`} />
-      <MetricRow label="Add Volume:" value={`${data.add.toFixed(2)} m³`} />
-
-      <Separator className="my-3" />
-
-      <div className="bg-white rounded-lg p-3 border border-slate-100">
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-slate-700">CNG Sales:</span>
-          <span className="text-xs text-slate-500">(x{price})</span>
+function InvoiceInfo({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-[1.4rem] border border-white/80 bg-white/85 p-4">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Icon className="h-4 w-4" />
         </div>
-        <div className="text-lg font-bold text-primary mt-1">
-          {new Intl.NumberFormat("en-BD", {
-            style: "currency",
-            currency: "BDT",
-          })
-            .format(data.taka)
-            .replace("BDT", "৳")}
+        <div>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="mt-1 font-mono text-sm font-semibold text-foreground">
+            {value}
+          </p>
         </div>
       </div>
     </div>
-  </div>
-);
-
-interface FuelTypeCardProps {
-  title: string;
-  price: number;
-  shifts?: InvoiceData["shifts"];
-  totalLitres?: number;
-  totalSale?: number;
-  closingStock?: number;
-  lpgData?: { sale: number; closing: number };
-  type: "diesel" | "octane" | "lpg";
+  );
 }
 
-const FuelTypeCard = ({
+function MetricPanel({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-3xl border border-border/70 bg-secondary/35 p-5">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-3 font-mono text-2xl font-semibold tracking-tight text-foreground">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ShiftCard({
+  shift,
+  data,
+  price,
+  formatNumber,
+  formatCurrency,
+}: {
+  shift: "a" | "b" | "c";
+  data: InvoiceData["shifts"][keyof InvoiceData["shifts"]];
+  price: number;
+  formatNumber: (value: number) => string;
+  formatCurrency: (value: number) => string;
+}) {
+  return (
+    <div className="rounded-3xl border border-border/70 bg-white p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <Badge className="rounded-full border-0 bg-primary/10 px-3 py-1 text-primary hover:bg-primary/10">
+          Shift {shift.toUpperCase()}
+        </Badge>
+        <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          x {formatNumber(price)}
+        </span>
+      </div>
+      <div className="space-y-3 text-sm">
+        <KeyValue label="Sale volume" value={`${formatNumber(data.sale)} m³`} />
+        <KeyValue label="EVC volume" value={`${formatNumber(data.evc)} m³`} />
+        <KeyValue label="Add volume" value={`${formatNumber(data.add)} m³`} />
+        <Separator />
+        <KeyValue label="Shift sale" value={formatCurrency(data.taka)} bold />
+      </div>
+    </div>
+  );
+}
+
+function FuelTypeCard({
   title,
   price,
   shifts,
@@ -427,163 +358,137 @@ const FuelTypeCard = ({
   closingStock,
   lpgData,
   type,
-}: FuelTypeCardProps) => {
-  const colorMap = {
-    diesel: {
-      bg: "bg-green-50",
-      border: "border-green-200",
-      text: "text-green-700",
-    },
-    octane: {
-      bg: "bg-orange-50",
-      border: "border-orange-200",
-      text: "text-orange-700",
-    },
-    lpg: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700" },
-  };
-
-  const colors = colorMap[type];
+  formatNumber,
+  formatCurrency,
+}: {
+  title: string;
+  price: number;
+  shifts?: InvoiceData["shifts"];
+  totalLitres?: number;
+  totalSale?: number;
+  closingStock?: number;
+  lpgData?: { sale: number; closing: number };
+  type: "diesel" | "octane" | "lpg";
+  formatNumber: (value: number) => string;
+  formatCurrency: (value: number) => string;
+}) {
+  const tone =
+    type === "diesel"
+      ? "bg-[#f2faf7]"
+      : type === "octane"
+        ? "bg-[#fff8ef]"
+        : "bg-[#fff5f5]";
 
   return (
-    <div className={`${colors.bg} rounded-xl p-4 border ${colors.border}`}>
-      <h3 className="font-semibold mb-3 pb-2 border-b border-slate-200 flex items-center gap-2">
-        <span className={colors.text}>{title}</span>
-        <span className="text-xs text-slate-500">(x{price})</span>
-      </h3>
+    <Card className={`border-border/70 ${tone} shadow-none`}>
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center justify-between gap-3 text-xl font-semibold tracking-tight text-foreground">
+          <span>{title}</span>
+          <span className="font-mono text-sm text-muted-foreground">
+            x {formatNumber(price)}
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {shifts
+          ? (["a", "b", "c"] as const).map((shift) => {
+              const litres =
+                type === "diesel" ? shifts[shift].diesel : shifts[shift].octane;
+              const pricePer =
+                type === "diesel"
+                  ? shifts[shift].dieselPrice
+                  : shifts[shift].octanePrice;
 
-      <div className="space-y-2">
-        {shifts &&
-          (["a", "b", "c"] as const).map((shift) => {
-            if (type === "lpg") {
-              // LPG does not exist on per-shift data structure; show placeholder
               return (
-                <div
+                <KeyValue
                   key={shift}
-                  className="flex justify-between items-center text-sm"
-                >
-                  <span className="text-slate-600">
-                    Shift {shift.toUpperCase()}:
-                  </span>
-                  <span className="font-medium">-</span>
-                </div>
+                  label={`Shift ${shift.toUpperCase()}`}
+                  value={`${formatNumber(litres)} L (৳${formatNumber(pricePer)})`}
+                />
               );
-            }
+            })
+          : null}
 
-            // Narrow type to diesel | octane so we can safely access fields
-            const litres =
-              type === "diesel" ? shifts[shift].diesel : shifts[shift].octane;
-            const pricePer =
-              type === "diesel"
-                ? shifts[shift].dieselPrice
-                : shifts[shift].octanePrice;
-
-            return (
-              <div
-                key={shift}
-                className="flex justify-between items-center text-sm"
-              >
-                <span className="text-slate-600">
-                  Shift {shift.toUpperCase()}:
-                </span>
-                <span className="font-medium">
-                  {litres.toFixed(2)} L
-                  <span className="ml-2 text-xs text-slate-500">
-                    (৳{pricePer.toLocaleString()})
-                  </span>
-                </span>
-              </div>
-            );
-          })}
-
-        {lpgData && (
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-slate-600">Total Sale:</span>
-            <span className="font-medium">
-              {(lpgData.sale / price).toFixed(2)} L
-            </span>
-          </div>
-        )}
-
-        <Separator className="my-3" />
-
-        <div className="space-y-2 text-sm">
-          {totalLitres !== undefined && (
-            <MetricRow
-              label="Total Litres:"
-              value={`${totalLitres.toFixed(2)} L`}
-            />
-          )}
-          {totalSale !== undefined && (
-            <MetricRow
-              label="Total Amount:"
-              value={new Intl.NumberFormat("en-BD", {
-                style: "currency",
-                currency: "BDT",
-              })
-                .format(totalSale)
-                .replace("BDT", "৳")}
-              className="font-bold text-lg"
-            />
-          )}
-          <MetricRow
-            label="Closing Stock:"
-            value={`${(lpgData?.closing || closingStock || 0).toFixed(2)} L`}
-            className="text-slate-500"
+        {lpgData ? (
+          <KeyValue
+            label="Equivalent litres"
+            value={`${formatNumber(lpgData.sale / price)} L`}
           />
-        </div>
-      </div>
+        ) : null}
+
+        <Separator />
+
+        {totalLitres !== undefined ? (
+          <KeyValue
+            label="Total litres"
+            value={`${formatNumber(totalLitres)} L`}
+          />
+        ) : null}
+        {totalSale !== undefined ? (
+          <KeyValue
+            label="Total amount"
+            value={formatCurrency(totalSale)}
+            bold
+          />
+        ) : (
+          <KeyValue
+            label="Total amount"
+            value={formatCurrency(lpgData?.sale || 0)}
+            bold
+          />
+        )}
+        <KeyValue
+          label="Closing stock"
+          value={`${formatNumber(lpgData?.closing || closingStock || 0)} L`}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+function SummaryBox({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[1.25rem] border border-border/70 bg-white p-4">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-2 font-mono text-lg font-semibold text-foreground">
+        {value}
+      </p>
     </div>
   );
-};
+}
 
-// Utility Components
-const MetricRow = ({
-  label,
-  value,
-  className = "",
-}: {
-  label: string;
-  value: string;
-  className?: string;
-}) => (
-  <div className="flex justify-between items-center">
-    <span className="text-slate-600">{label}</span>
-    <span className={`font-medium ${className}`}>{value}</span>
-  </div>
-);
-
-const MetricItem = ({
-  label,
-  value,
-  className = "",
-}: {
-  label: string;
-  value: string;
-  className?: string;
-}) => (
-  <div>
-    <p className="text-sm text-slate-600 mb-1">{label}</p>
-    <p className={`font-bold ${className}`}>{value}</p>
-  </div>
-);
-
-const SummaryItem = ({
-  label,
-  value,
-  formatCurrency,
-  className = "",
-}: {
-  label: string;
-  value: number;
-  formatCurrency: (value: number) => string;
-  className?: string;
-}) => (
-  <div
-    className={`bg-white rounded-lg p-3 border border-slate-100 ${className}`}
-  >
-    <div className="flex justify-between items-center">
-      <span className="font-medium text-slate-700">{label}</span>
-      <span className="font-bold text-slate-900">{formatCurrency(value)}</span>
+function SummaryLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-[1.2rem] border border-border/70 bg-secondary/25 px-4 py-3">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="font-mono text-sm font-semibold text-foreground">
+        {value}
+      </span>
     </div>
-  </div>
-);
+  );
+}
+
+function KeyValue({
+  label,
+  value,
+  bold = false,
+}: {
+  label: string;
+  value: string;
+  bold?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <span
+        className={
+          bold
+            ? "font-mono font-semibold text-foreground"
+            : "font-mono text-foreground"
+        }
+      >
+        {value}
+      </span>
+    </div>
+  );
+}

@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { CircleDollarSign, SlidersHorizontal } from "lucide-react";
+
 import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from "@/src/components/ui/sheet";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -36,9 +38,20 @@ type PriceFormValues = z.infer<typeof priceSchema>;
 interface PriceUpdateModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  currentPrices: IPrices;
+  currentPrices: Pick<IPrices, "CNG" | "DIESEL" | "OCTANE" | "LPG"> | null;
   onSuccess: () => void;
 }
+
+const fields: Array<{
+  name: keyof PriceFormValues;
+  label: string;
+  unit: string;
+}> = [
+  { name: "CNG", label: "CNG", unit: "per m³" },
+  { name: "DIESEL", label: "Diesel", unit: "per litre" },
+  { name: "OCTANE", label: "Octane", unit: "per litre" },
+  { name: "LPG", label: "LPG", unit: "per litre" },
+];
 
 export function PriceUpdateModal({
   isOpen,
@@ -58,7 +71,6 @@ export function PriceUpdateModal({
     },
   });
 
-  // Reset form when currentPrices changes
   useEffect(() => {
     if (currentPrices) {
       form.reset({
@@ -97,70 +109,85 @@ export function PriceUpdateModal({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Update Fuel Prices</SheetTitle>
-          <SheetDescription>
-            Set the current prices for each fuel type. These will be used for new entries.
-          </SheetDescription>
+      <SheetContent className="w-full border-l-white/80 bg-[rgba(250,248,242,0.97)] px-6 sm:max-w-xl overflow-y-auto">
+        <SheetHeader className="gap-4 border-b border-border/70 pb-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <SlidersHorizontal className="h-5 w-5" />
+          </div>
+          <div className="space-y-2">
+            <SheetTitle className="text-2xl font-semibold tracking-tight text-foreground">
+              Update fuel pricing
+            </SheetTitle>
+            <SheetDescription className="text-sm leading-6 text-muted-foreground">
+              Adjust the active rates used across new reports and generated
+              invoices.
+            </SheetDescription>
+          </div>
         </SheetHeader>
+
+        <div className="mt-6 rounded-3xl border border-white/80 bg-white/80 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-foreground">
+              <CircleDollarSign className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Pricing policy
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Keep values aligned with the current retail board before opening
+                a new daily entry.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="CNG"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CNG (per m³)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="DIESEL"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>DIESEL (per ltr)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="OCTANE"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>OCTANE (per ltr)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="LPG"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>LPG (per ltr)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <SheetFooter>
-              <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? "Updating..." : "Update Prices"}
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mt-6 space-y-4"
+          >
+            {fields.map((item) => (
+              <FormField
+                key={item.name}
+                control={form.control}
+                name={item.name}
+                render={({ field }) => (
+                  <FormItem className="rounded-[1.4rem] border border-border/70 bg-white/80 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <FormLabel className="text-base font-semibold text-foreground">
+                          {item.label}
+                        </FormLabel>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {item.unit}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        Active
+                      </span>
+                    </div>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        className="mt-4 h-12 rounded-xl border-white bg-secondary/35 text-base"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))}
+
+            <SheetFooter className="border-t border-border/70 pt-6">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-12 w-full rounded-full"
+              >
+                {isSubmitting ? "Updating prices..." : "Save updated rates"}
               </Button>
             </SheetFooter>
           </form>

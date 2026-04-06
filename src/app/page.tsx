@@ -1,18 +1,70 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import type { ComponentType } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Plus, Settings2, Fuel } from "lucide-react";
+import {
+  ArrowRight,
+  ChartColumnIncreasing,
+  ClipboardList,
+  Gauge,
+  Plus,
+  Settings2,
+  Sparkles,
+} from "lucide-react";
+
 import { PriceUpdateModal } from "@/src/components/modules/home/PriceUpdateModal";
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
-import { PRICES } from "@/src/utils/constans";
+import { Card, CardContent } from "@/src/components/ui/card";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { IPrices } from "@/src/models/Prices";
+import { PRICES } from "@/src/utils/constans";
+
+type FuelKey = keyof typeof PRICES;
+
+type PriceRecord = Pick<IPrices, FuelKey>;
+
+const fuelMeta: Array<{
+  key: FuelKey;
+  unit: string;
+  tint: string;
+  accent: string;
+  description: string;
+}> = [
+  {
+    key: "CNG",
+    unit: "m³",
+    tint: "from-[#dff6f1] to-[#f6fbf8]",
+    accent: "bg-[#0c7866]",
+    description: "Compressed natural gas",
+  },
+  {
+    key: "DIESEL",
+    unit: "ltr",
+    tint: "from-[#fef2dc] to-[#fffaf1]",
+    accent: "bg-[#bc954e]",
+    description: "Primary fleet fueling",
+  },
+  {
+    key: "OCTANE",
+    unit: "ltr",
+    tint: "from-[#ffe7da] to-[#fff7f2]",
+    accent: "bg-[#d97745]",
+    description: "High-performance retail fuel",
+  },
+  {
+    key: "LPG",
+    unit: "ltr",
+    tint: "from-[#fbe5e6] to-[#fff9f9]",
+    accent: "bg-[#cc6b72]",
+    description: "Cylinder and vehicle supply",
+  },
+];
 
 export default function HomePage() {
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [prices, setPrices] = useState<any>(null);
+  const [prices, setPrices] = useState<PriceRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchPrices = async () => {
@@ -20,10 +72,11 @@ export default function HomePage() {
     try {
       const response = await fetch("/api/prices");
       const data = await response.json();
+
       if (data.success && data.data) {
         setPrices(data.data);
       } else {
-        setPrices(PRICES); // Fallback to constants
+        setPrices(PRICES);
       }
     } catch (error) {
       console.error("Failed to fetch prices:", error);
@@ -37,51 +90,166 @@ export default function HomePage() {
     fetchPrices();
   }, []);
 
-  return (
-    <div className="max-w-7xl mx-auto p-6 space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fuel Station Dashboard</h1>
-          <p className="text-muted-foreground">Monitor current rates and manage station operations</p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setIsPriceModalOpen(true)}
-          >
-            <Settings2 className="h-4 w-4" />
-            Update Prices
-          </Button>
-          <Button
-            asChild
-            className="gap-2 shadow-lg hover:shadow-xl transition-all"
-          >
-            <Link href="/logs/new">
-              <Plus className="h-4 w-4" />
-              Add New Entry
-            </Link>
-          </Button>
-        </div>
-      </div>
+  const stationMetrics = useMemo(() => {
+    const activePrices = prices ?? PRICES;
+    const values = Object.values(activePrices);
+    const average =
+      values.reduce((sum, value) => sum + value, 0) / values.length;
+    const highest = Math.max(...values);
+    const lowest = Math.min(...values);
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {isLoading ? (
-          <>
-            <Skeleton className="h-32 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
-          </>
-        ) : (
-          <>
-            <PriceCard label="CNG" price={prices?.CNG} unit="m³" color="blue" />
-            <PriceCard label="DIESEL" price={prices?.DIESEL} unit="ltr" color="green" />
-            <PriceCard label="OCTANE" price={prices?.OCTANE} unit="ltr" color="orange" />
-            <PriceCard label="LPG" price={prices?.LPG} unit="ltr" color="red" />
-          </>
-        )}
-      </div>
+    return {
+      average,
+      spread: highest - lowest,
+      products: values.length,
+    };
+  }, [prices]);
+
+  return (
+    <div className="page-shell space-y-8">
+      <section className="page-hero">
+        <div className="absolute inset-y-0 right-0 hidden w-md bg-[radial-gradient(circle_at_center,rgba(12,120,102,0.18),transparent_62%)] lg:block" />
+        <div className="relative grid gap-8 lg:grid-cols-[1.4fr_0.9fr] lg:items-end">
+          <div className="space-y-6">
+            <Badge className="rounded-full border-0 bg-primary/10 px-4 py-1.5 text-primary hover:bg-primary/10">
+              Live operations dashboard
+            </Badge>
+            <div className="max-w-2xl space-y-4">
+              <p className="section-label">Xpeed CNG station control</p>
+              <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                A cleaner command center for pricing, reporting, and daily
+                station rhythm.
+              </h1>
+              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+                Monitor every fuel rate at a glance, launch new shift reports
+                quickly, and keep the station team working from one polished
+                operational surface.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                className="h-12 rounded-full px-6 text-sm shadow-[0_20px_35px_-22px_rgba(9,82,70,0.85)]"
+                onClick={() => setIsPriceModalOpen(true)}
+              >
+                <Settings2 className="h-4 w-4" />
+                Update fuel prices
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="h-12 rounded-full border-white/80 bg-white/70 px-6 text-sm"
+              >
+                <Link href="/logs/new">
+                  <Plus className="h-4 w-4" />
+                  Create daily entry
+                </Link>
+              </Button>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <StationMetric
+                icon={Gauge}
+                label="Average active rate"
+                value={`৳${stationMetrics.average.toFixed(2)}`}
+              />
+              <StationMetric
+                icon={ChartColumnIncreasing}
+                label="Price spread"
+                value={`৳${stationMetrics.spread.toFixed(2)}`}
+              />
+              <StationMetric
+                icon={ClipboardList}
+                label="Managed products"
+                value={stationMetrics.products.toString()}
+              />
+            </div>
+          </div>
+
+          <Card className="overflow-hidden border-0 bg-[#16332e] text-white shadow-[0_28px_80px_-42px_rgba(9,82,70,0.95)]">
+            <CardContent className="space-y-6 p-7">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="section-label text-white/65">
+                    Operations pulse
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+                    Station ready for daily reporting
+                  </h2>
+                </div>
+                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-white/80">
+                  Live
+                </span>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <HighlightCard
+                  label="Quick access"
+                  value="Generate invoice-ready reports"
+                />
+                <HighlightCard
+                  label="Control"
+                  value="Update retail rates instantly"
+                />
+              </div>
+
+              <div className="rounded-3xl border border-white/10 bg-white/6 p-5">
+                <div className="flex items-center gap-2 text-sm text-white/70">
+                  <Sparkles className="h-4 w-4" />
+                  Workflow recommendation
+                </div>
+                <p className="mt-3 text-lg font-medium leading-7 text-white">
+                  Start the day by confirming rates, then move into a new daily
+                  report for clean invoice generation and audit-friendly logs.
+                </p>
+                <Button
+                  asChild
+                  variant="secondary"
+                  className="mt-5 rounded-full border-0 bg-white text-[#16332e] hover:bg-white/90"
+                >
+                  <Link href="/logs">
+                    Open daily logs
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="space-y-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="section-label">Current rates</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+              Today&apos;s fuel pricing board
+            </h2>
+          </div>
+          <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+            Each card reflects the current system value used for new entries and
+            invoice generation.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {isLoading
+            ? fuelMeta.map((item) => (
+                <Skeleton key={item.key} className="h-52 rounded-[1.75rem]" />
+              ))
+            : fuelMeta.map((item) => (
+                <PriceCard
+                  key={item.key}
+                  label={item.key}
+                  price={prices?.[item.key] ?? PRICES[item.key]}
+                  unit={item.unit}
+                  tint={item.tint}
+                  accent={item.accent}
+                  description={item.description}
+                />
+              ))}
+        </div>
+      </section>
 
       <PriceUpdateModal
         isOpen={isPriceModalOpen}
@@ -93,37 +261,78 @@ export default function HomePage() {
   );
 }
 
-function PriceCard({ label, price, unit, color }: { label: string, price: number, unit: string, color: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const colorVariants: any = {
-    blue: "border-l-blue-500 bg-blue-50/50",
-    green: "border-l-green-500 bg-green-50/50",
-    orange: "border-l-orange-500 bg-orange-50/50",
-    red: "border-l-red-500 bg-red-50/50",
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const textVariants: any = {
-    blue: "text-blue-700",
-    green: "text-green-700",
-    orange: "text-orange-700",
-    red: "text-red-700",
-  };
-
+function PriceCard({
+  label,
+  price,
+  unit,
+  tint,
+  accent,
+  description,
+}: {
+  label: string;
+  price: number;
+  unit: string;
+  tint: string;
+  accent: string;
+  description: string;
+}) {
   return (
-    <Card className={`border-l-4 shadow-sm ${colorVariants[color]}`}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
-          <Fuel className="h-4 w-4" />
-          {label} RATE
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-bold ${textVariants[color]}`}>
-          ৳{price?.toFixed(2)}
-          <span className="text-xs font-normal text-muted-foreground ml-1">per {unit}</span>
+    <Card
+      className={`overflow-hidden border-white/80 bg-linear-to-br ${tint}`}
+    >
+      <CardContent className="flex h-full flex-col gap-8 p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="section-label">{label}</p>
+            <h3 className="mt-2 text-xl font-semibold text-foreground">
+              {description}
+            </h3>
+          </div>
+          <span className={`mt-1 h-3 w-3 rounded-full ${accent}`} />
+        </div>
+
+        <div className="space-y-2">
+          <div className="metric-value">৳{price.toFixed(2)}</div>
+          <p className="text-sm text-muted-foreground">Applied per {unit}</p>
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function StationMetric({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-white/70 bg-white/72 p-4 shadow-[0_20px_60px_-42px_rgba(15,23,42,0.55)] backdrop-blur">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Icon className="h-4 w-4" />
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="font-mono text-lg font-semibold text-foreground">
+            {value}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HighlightCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[1.3rem] border border-white/10 bg-white/8 p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">
+        {label}
+      </p>
+      <p className="mt-2 text-base font-medium leading-6 text-white">{value}</p>
+    </div>
   );
 }
