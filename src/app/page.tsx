@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { PriceUpdateModal } from "@/src/components/modules/home/PriceUpdateModal";
+import { PriceHistoryTable } from "@/src/components/modules/home/PriceHistoryTable";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
@@ -62,15 +63,16 @@ export default function HomePage() {
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [prices, setPrices] = useState<PriceRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const fetchPrices = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/prices");
+      const response = await fetch("/api/prices?limit=1");
       const data = await response.json();
 
-      if (data.success && data.data) {
-        setPrices(data.data);
+      if (data.success && data.data && data.data.length > 0) {
+        setPrices(data.data[0]);
       } else {
         setPrices(PRICES);
       }
@@ -82,43 +84,56 @@ export default function HomePage() {
     }
   };
 
+  const handlePriceUpdateSuccess = () => {
+    fetchPrices();
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
   useEffect(() => {
     fetchPrices();
   }, []);
 
   return (
-    <div className="page-shell space-y-8">
+    <div className="page-shell space-y-6">
       <section className="page-hero">
         <div className="absolute inset-y-0 right-0 hidden w-md bg-[radial-gradient(circle_at_center,rgba(12,120,102,0.18),transparent_62%)] lg:block" />
-        <div className="relative grid gap-8 lg:grid-cols-[1.4fr_0.9fr] lg:items-start">
+        <div className="relative grid gap-6 lg:grid-cols-[1.5fr_0.8fr] lg:items-start">
           <div className="space-y-6">
-            <Badge className="rounded-full border-0 bg-primary/10 px-4 py-1.5 text-primary hover:bg-primary/10">
-              Live operations dashboard
-            </Badge>
-            <div className="max-w-2xl space-y-4">
-              <p className="section-label">Xpeed CNG station control</p>
-              <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-                A cleaner command center for pricing, reporting, and daily
-                station rhythm.
+            <div className="space-y-2">
+              <Badge className="rounded-full border-0 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/10">
+                Live command center
+              </Badge>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                Station operations & pricing
               </h1>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-                Monitor every fuel rate at a glance, launch new shift reports
-                quickly, and keep the station team working from one polished
-                operational surface.
-              </p>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="section-label">Current rates</p>
-                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-                    Today&apos;s fuel pricing board
-                  </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  Today&apos;s fuel rates
+                </h2>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="h-9 rounded-full px-4 text-xs shadow-md"
+                    onClick={() => setIsPriceModalOpen(true)}
+                  >
+                    <Settings2 className="h-3.5 w-3.5" />
+                    Update prices
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="h-9 rounded-full border-white/80 bg-white/70 px-4 text-xs"
+                  >
+                    <Link href="/logs/new">
+                      <Plus className="h-3.5 w-3.5" />
+                      New entry
+                    </Link>
+                  </Button>
                 </div>
-                <p className="max-w-lg text-sm leading-6 text-muted-foreground">
-                  Live values used for new entries and invoice generation.
-                </p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -126,7 +141,7 @@ export default function HomePage() {
                   ? fuelMeta.map((item) => (
                       <Skeleton
                         key={item.key}
-                        className="h-36 rounded-3xl"
+                        className="h-32 rounded-2xl"
                       />
                     ))
                   : fuelMeta.map((item) => (
@@ -143,85 +158,58 @@ export default function HomePage() {
                     ))}
               </div>
             </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                className="h-12 rounded-full px-6 text-sm shadow-[0_20px_35px_-22px_rgba(9,82,70,0.85)]"
-                onClick={() => setIsPriceModalOpen(true)}
-              >
-                <Settings2 className="h-4 w-4" />
-                Update fuel prices
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="h-12 rounded-full border-white/80 bg-white/70 px-6 text-sm"
-              >
-                <Link href="/logs/new">
-                  <Plus className="h-4 w-4" />
-                  Create daily entry
-                </Link>
-              </Button>
-            </div>
           </div>
 
-          <Card className="overflow-hidden border-0 bg-[#16332e] text-white shadow-[0_28px_80px_-42px_rgba(9,82,70,0.95)]">
-            <CardContent className="space-y-6 p-7">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="section-label text-white/65">
-                    Operations pulse
-                  </p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-                    Station ready for daily reporting
-                  </h2>
-                </div>
-                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-white/80">
+          <Card className="overflow-hidden border-0 bg-[#16332e] text-white shadow-xl">
+            <CardContent className="space-y-4 p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                  Operations status
+                </p>
+                <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-tighter text-white/90">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                   Live
                 </span>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <HighlightCard
-                  label="Quick access"
-                  value="Generate invoice-ready reports"
-                />
-                <HighlightCard
-                  label="Control"
-                  value="Update retail rates instantly"
-                />
-              </div>
+              <h2 className="text-xl font-semibold tracking-tight">
+                Reporting pulse
+              </h2>
 
-              <div className="rounded-3xl border border-white/10 bg-white/6 p-5">
-                <div className="flex items-center gap-2 text-sm text-white/70">
-                  <Sparkles className="h-4 w-4" />
-                  Workflow recommendation
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+                  <div className="flex items-center gap-2 text-xs text-white/70">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Recommended action
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-white/90">
+                    Confirm rates, then start a daily report for clean invoice generation.
+                  </p>
+                  <Button
+                    asChild
+                    variant="secondary"
+                    size="sm"
+                    className="mt-4 h-9 w-full rounded-full border-0 bg-white text-[#16332e] hover:bg-white/90 text-xs"
+                  >
+                    <Link href="/logs">
+                      Open daily logs
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
                 </div>
-                <p className="mt-3 text-lg font-medium leading-7 text-white">
-                  Start the day by confirming rates, then move into a new daily
-                  report for clean invoice generation and audit-friendly logs.
-                </p>
-                <Button
-                  asChild
-                  variant="secondary"
-                  className="mt-5 rounded-full border-0 bg-white text-[#16332e] hover:bg-white/90"
-                >
-                  <Link href="/logs">
-                    Open daily logs
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
+      <PriceHistoryTable refreshTrigger={refreshTrigger} />
+
       <PriceUpdateModal
         isOpen={isPriceModalOpen}
         onOpenChange={setIsPriceModalOpen}
         currentPrices={prices}
-        onSuccess={fetchPrices}
+        onSuccess={handlePriceUpdateSuccess}
       />
     </div>
   );
@@ -273,13 +261,13 @@ function PriceCard({
 }
 
 
-function HighlightCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[1.3rem] border border-white/10 bg-white/8 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">
-        {label}
-      </p>
-      <p className="mt-2 text-base font-medium leading-6 text-white">{value}</p>
-    </div>
-  );
-}
+// function HighlightCard({ label, value }: { label: string; value: string }) {
+//   return (
+//     <div className="rounded-[1.3rem] border border-white/10 bg-white/8 p-4">
+//       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">
+//         {label}
+//       </p>
+//       <p className="mt-2 text-base font-medium leading-6 text-white">{value}</p>
+//     </div>
+//   );
+// }

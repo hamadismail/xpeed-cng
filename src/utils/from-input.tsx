@@ -31,17 +31,30 @@ export function Section({
   title,
   description,
   children,
+  compact = false,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
+  compact?: boolean;
 }) {
   return (
-    <section className="space-y-5 rounded-[1.75rem] border border-white/70 bg-white/75 p-5 shadow-[0_20px_60px_-44px_rgba(15,23,42,0.55)] sm:p-6">
-      <div className="space-y-2 border-b border-border/70 pb-4">
-        <p className="section-label">Report section</p>
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h2>
-        {description ? <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
+    <section className={cn(
+      "rounded-3xl border border-white/70 bg-white/75 shadow-sm",
+      compact ? "space-y-4 p-4" : "space-y-5 p-5 sm:p-6"
+    )}>
+      <div className={cn(
+        "border-b border-border/70",
+        compact ? "pb-2" : "space-y-2 pb-4"
+      )}>
+        {!compact && <p className="section-label text-[10px]">Report section</p>}
+        <h2 className={cn(
+          "font-semibold tracking-tight text-foreground",
+          compact ? "text-lg" : "text-2xl"
+        )}>{title}</h2>
+        {description && !compact ? (
+          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+        ) : null}
       </div>
       {children}
     </section>
@@ -52,19 +65,32 @@ export function Section({
 export function ShiftCard({
   title,
   children,
+  compact = false,
 }: {
   title: string;
   children: React.ReactNode;
+  compact?: boolean;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-border/70 bg-secondary/45 p-4 shadow-[0_18px_55px_-44px_rgba(15,23,42,0.45)]">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <h3 className="font-semibold text-foreground">{title}</h3>
-        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Shift
-        </span>
+    <div className={cn(
+      "rounded-2xl border border-border/70 bg-secondary/45 shadow-sm",
+      compact ? "p-3" : "p-4"
+    )}>
+      <div className={cn(
+        "flex items-center justify-between gap-4",
+        compact ? "mb-3" : "mb-4"
+      )}>
+        <h3 className={cn(
+          "font-semibold text-foreground",
+          compact ? "text-sm" : "text-base"
+        )}>{title}</h3>
+        {!compact && (
+          <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Shift
+          </span>
+        )}
       </div>
-      <div className="space-y-3">{children}</div>
+      <div className={compact ? "space-y-2" : "space-y-3"}>{children}</div>
     </div>
   );
 }
@@ -76,18 +102,20 @@ export function ShiftInput({ control, name, label, placeholder }: InputProps) {
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-sm font-medium">{label}</FormLabel>
+        <FormItem className="space-y-1">
+          <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            {label}
+          </FormLabel>
           <FormControl>
             <Input
               type="number"
               step="0.01"
               placeholder={placeholder}
-              className="h-11 rounded-xl border-white bg-white/90"
+              className="h-9 rounded-lg border-white/50 bg-white/90 text-sm"
               {...field}
             />
           </FormControl>
-          <FormMessage className="text-xs" />
+          <FormMessage className="text-[10px]" />
         </FormItem>
       )}
     />
@@ -101,18 +129,20 @@ export function FormInput({ control, name, label, placeholder }: InputProps) {
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="rounded-[1.4rem] border border-border/70 bg-secondary/45 p-4 shadow-[0_18px_55px_-44px_rgba(15,23,42,0.45)]">
-          <FormLabel className="font-medium text-foreground">{label}</FormLabel>
+        <FormItem className="rounded-2xl border border-border/70 bg-secondary/45 p-3 shadow-sm space-y-1.5">
+          <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            {label}
+          </FormLabel>
           <FormControl>
             <Input
               type="number"
               step="0.01"
               placeholder={placeholder}
-              className="mt-2 h-11 rounded-xl border-white bg-white/90"
+              className="h-9 rounded-lg border-white/50 bg-white/90 text-sm"
               {...field}
             />
           </FormControl>
-          <FormMessage />
+          <FormMessage className="text-[10px]" />
         </FormItem>
       )}
     />
@@ -127,41 +157,40 @@ export function DatePickerField({ control }: { control: any }) {
       control={control}
       name="date"
       render={({ field }) => (
-        <FormItem className="flex flex-col rounded-[1.4rem] border border-border/70 bg-secondary/45 p-4 shadow-[0_18px_55px_-44px_rgba(15,23,42,0.45)]">
-          <FormLabel className="font-medium text-foreground">Pick Date *</FormLabel>
+        <FormItem className="flex flex-col rounded-2xl border border-border/70 bg-secondary/45 p-3 shadow-sm space-y-1.5">
+          <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            Pick Date *
+          </FormLabel>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
                   variant="outline"
                   className={cn(
-                    "mt-2 h-11 w-full justify-start rounded-xl border-white bg-white/90 pl-3 text-left font-normal",
+                    "h-9 w-full justify-start rounded-lg border-white/50 bg-white/90 pl-3 text-left text-sm font-normal",
                     !field.value && "text-muted-foreground"
                   )}
                 >
                   {field.value ? (
-                    format(field.value, "PPP")
+                    format(field.value, "dd MMM yyyy")
                   ) : (
                     <span>Select a date</span>
                   )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  <CalendarIcon className="ml-auto h-3.5 w-3.5 opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto rounded-[1.25rem] border-white/80 p-0" align="start">
+            <PopoverContent className="w-auto rounded-xl border-white/80 p-0 shadow-2xl" align="start">
               <Calendar
                 mode="single"
                 selected={field.value}
                 onSelect={field.onChange}
                 captionLayout="dropdown"
-                className="rounded-[1.25rem] bg-white p-3"
+                className="rounded-xl bg-white p-2"
               />
             </PopoverContent>
           </Popover>
-          <FormDescription className="sr-only">
-            Select the report date
-          </FormDescription>
-          <FormMessage />
+          <FormMessage className="text-[10px]" />
         </FormItem>
       )}
     />

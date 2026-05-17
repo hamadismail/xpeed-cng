@@ -88,57 +88,52 @@ export default function DailyReportForm() {
   return (
     <div className="page-shell space-y-6">
       <Card className="glass-panel overflow-hidden border-white/70 bg-white/82">
-        <CardHeader className="gap-5 border-b border-border/70 pb-6">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-            <div className="space-y-3">
-              <p className="section-label">Entry form</p>
-              <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">
-                Xpeed daily operations report
+        <CardHeader className="gap-4 border-b border-border/70 p-5">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="space-y-1">
+              <Badge className="rounded-full border-0 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/10">
+                Data entry mode
+              </Badge>
+              <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
+                Daily operations report
               </CardTitle>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-                Record each shift with enough clarity for station review, invoice generation, and
-                audit follow-up.
-              </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <SummaryChip icon={Fuel} label="Shifts captured" value="A / B / C" />
+            <div className="flex gap-2">
+              <SummaryChip icon={Fuel} label="Shifts" value="A/B/C" />
               <SummaryChip
                 icon={ReceiptText}
-                label="Report date"
+                label="Date"
                 value={format(new Date(), "dd MMM yyyy")}
               />
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className="p-5">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" noValidate>
               <CNGShiftsSection form={form} />
               <FuelSalesSection form={form} />
 
-              <div className="rounded-[1.75rem] border border-white/70 bg-[linear-gradient(135deg,rgba(12,120,102,0.08),rgba(188,149,78,0.12))] p-5">
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="max-w-xl space-y-2">
-                    <p className="section-label text-primary/70">Submit report</p>
-                    <h3 className="text-xl font-semibold tracking-tight text-foreground">
-                      Generate the station invoice from this saved report.
+              <div className="rounded-2xl border border-white/70 bg-[linear-gradient(135deg,rgba(12,120,102,0.08),rgba(188,149,78,0.12))] p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="max-w-xl space-y-1">
+                    <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                      Finalize & generate invoice
                     </h3>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      Once submitted, the report is stored and opened directly in the invoice view
-                      for printing or review.
+                    <p className="text-xs text-muted-foreground">
+                      Review all values before saving. The station invoice will open automatically.
                     </p>
                   </div>
 
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="h-12 rounded-full px-6 text-sm shadow-[0_18px_30px_-18px_rgba(9,82,70,0.85)]"
-                    size="lg"
+                    className="h-10 rounded-full px-6 text-xs shadow-lg"
                   >
-                    <Send className="h-4 w-4" />
-                    {isSubmitting ? "Generating invoice..." : "Save and generate invoice"}
+                    <Send className="mr-2 h-3.5 w-3.5" />
+                    {isSubmitting ? "Generating..." : "Save and generate invoice"}
                   </Button>
                 </div>
               </div>
@@ -153,22 +148,22 @@ export default function DailyReportForm() {
 function CNGShiftsSection({ form }: { form: ReturnType<typeof useForm<FormValues>> }) {
   return (
     <Section
-      title="CNG shift performance"
-      description="Capture sale and EVC volume for each operational shift. Add volume is calculated in the invoice output."
+      title="CNG performance"
+      compact
     >
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
         {(["a", "b", "c"] as const).map((shift) => (
-          <ShiftCard key={shift} title={SHIFT_LABELS[shift]}>
+          <ShiftCard key={shift} title={SHIFT_LABELS[shift]} compact>
             <ShiftInput
               control={form.control}
               name={`shifts.${shift}.sale`}
-              label="Sale volume (m³)"
+              label="Sale (m³)"
               placeholder="0.00"
             />
             <ShiftInput
               control={form.control}
               name={`shifts.${shift}.evc`}
-              label="EVC volume (m³)"
+              label="EVC (m³)"
               placeholder="0.00"
             />
           </ShiftCard>
@@ -181,52 +176,52 @@ function CNGShiftsSection({ form }: { form: ReturnType<typeof useForm<FormValues
 function FuelSalesSection({ form }: { form: ReturnType<typeof useForm<FormValues>> }) {
   return (
     <Section
-      title="Liquid fuel and closing values"
-      description="Record diesel and octane sales per shift, then confirm closing stock, LPG details, outstanding dues, and report date."
+      title="Fuel & stock"
+      compact
     >
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
         {(["a", "b", "c"] as const).map((shift) => (
-          <ShiftCard key={shift} title={SHIFT_LABELS[shift]}>
+          <ShiftCard key={shift} title={SHIFT_LABELS[shift]} compact>
             <ShiftInput
               control={form.control}
               name={`shifts.${shift}.diesel`}
-              label="Diesel sale (ltr)"
+              label="Diesel (ltr)"
               placeholder="0.00"
             />
             <ShiftInput
               control={form.control}
               name={`shifts.${shift}.octane`}
-              label="Octane sale (ltr)"
+              label="Octane (ltr)"
               placeholder="0.00"
             />
           </ShiftCard>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 mt-4 md:grid-cols-2 xl:grid-cols-3">
         <FormInput
           control={form.control}
           name="dieselClosing"
-          label="Diesel closing stock (ltr)"
+          label="Diesel closing (ltr)"
           placeholder="0.00"
         />
         <FormInput
           control={form.control}
           name="octaneClosing"
-          label="Octane closing stock (ltr)"
+          label="Octane closing (ltr)"
           placeholder="0.00"
         />
         <FormInput
           control={form.control}
           name="dieselOctaneDue"
-          label="Diesel + octane due (taka)"
+          label="D+O due (taka)"
           placeholder="0.00"
         />
         <FormInput control={form.control} name="lpg" label="LPG amount (taka)" placeholder="0.00" />
         <FormInput
           control={form.control}
           name="lpgClosing"
-          label="LPG closing stock (ltr)"
+          label="LPG closing (ltr)"
           placeholder="0.00"
         />
         <DatePickerField control={form.control} />
@@ -245,14 +240,12 @@ function SummaryChip({
   value: string;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-border/70 bg-secondary/55 p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-primary">
-          <Icon className="h-4 w-4" />
-        </div>
+    <div className="rounded-2xl border border-border/50 bg-secondary/40 px-3 py-2">
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 text-primary" />
         <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="font-mono text-base font-semibold text-foreground">{value}</p>
+          <p className="text-[10px] uppercase font-bold text-muted-foreground leading-none">{label}</p>
+          <p className="mt-1 font-mono text-xs font-bold text-foreground leading-none">{value}</p>
         </div>
       </div>
     </div>

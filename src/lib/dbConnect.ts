@@ -3,7 +3,7 @@ import { ensureAdminSeeded } from "@/src/lib/seed-admin";
 
 const MONGODB_URI = process.env.MONGODB_URI as string;
 if (!MONGODB_URI) {
-  throw new Error("Please define the MONGO_URI environment variable");
+  throw new Error("Please define the MONGODB_URI environment variable");
 }
 
 type MongooseCache = {
@@ -16,25 +16,24 @@ declare global {
 }
 
 // Global is used here to prevent multiple connections during hot-reloading
-let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+let cached = global.mongoose;
 
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {
-  if (cached.conn) return cached.conn;
+  if (cached!.conn) return cached!.conn;
 
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      // dbName: "your_db_name",
+  if (!cached!.promise) {
+    cached!.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
     });
   }
 
-  cached.conn = await cached.promise;
+  cached!.conn = await cached!.promise;
   await ensureAdminSeeded();
-  return cached.conn;
+  return cached!.conn;
 }
 
 export default dbConnect;

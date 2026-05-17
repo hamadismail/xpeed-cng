@@ -7,20 +7,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
-  FileText,
   Search,
 } from "lucide-react";
 
-import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import { Calendar } from "@/src/components/ui/calendar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+import { Card, CardContent } from "@/src/components/ui/card";
 import {
   Popover,
   PopoverContent,
@@ -133,159 +125,123 @@ export default function LogsPage() {
   }
 
   return (
-    <div className="page-shell space-y-8">
-      <section className="page-hero">
-        <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-2xl space-y-4">
-            <p className="section-label">Archive and invoice history</p>
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-              Daily logs designed for fast review and clean retrieval.
-            </h1>
-            <p className="text-base leading-7 text-muted-foreground">
-              Filter records by date, inspect each shift summary, and open
-              print-ready invoices without losing context.
-            </p>
+    <div className="page-shell space-y-4">
+      <section className="page-hero p-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="space-y-0.5">
+              <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                Daily logs
+              </h1>
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                Station operations archive
+              </p>
+            </div>
+            <div className="h-8 w-px bg-border/60" />
+            <DatePicker date={date} onDateChange={handleDateChange} />
+            {date && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearDateFilter}
+                className="h-8 rounded-full px-2 text-[10px] font-bold text-destructive hover:bg-destructive/10"
+              >
+                CLEAR
+              </Button>
+            )}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-3 gap-2 lg:w-auto">
             <TopMetric
-              label="Total records"
+              label="Entries"
               value={pagination.total.toLocaleString()}
             />
             <TopMetric
-              label="Current page"
+              label="Page"
               value={`${pagination.page}/${pagination.totalPages}`}
             />
             <TopMetric
-              label="Date filter"
+              label="Selected"
               value={date ? format(date, "dd MMM") : "All"}
             />
           </div>
         </div>
       </section>
 
-      <Card className="glass-panel border-white/70 bg-white/82">
-        <CardHeader className="gap-5 border-b border-border/70 pb-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-2">
-              <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
-                Report register
-              </CardTitle>
-              <CardDescription className="max-w-xl text-sm leading-6">
-                Browse all station entries and move directly into invoice mode
-                when you need a printable daily summary.
-              </CardDescription>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              {date && (
-                <Badge
-                  variant="secondary"
-                  className="rounded-full border border-border/60 bg-secondary/80 px-4 py-2 text-foreground"
-                >
-                  {format(date, "MMM dd, yyyy")}
-                  <button
-                    onClick={clearDateFilter}
-                    className="ml-2 text-muted-foreground transition-colors hover:text-destructive"
-                    aria-label="Clear date filter"
-                  >
-                    ×
-                  </button>
-                </Badge>
-              )}
-              <DatePicker date={date} onDateChange={handleDateChange} />
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6 p-4 sm:p-6">
-          <div className="overflow-hidden rounded-3xl border border-border/70 bg-white">
+      <Card className="p-0 glass-panel border-white/70 bg-white/82 overflow-hidden">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-secondary/70">
-                <TableRow className="border-border/70 hover:bg-secondary/70">
-                  <TableHead className="py-4 font-semibold">Date</TableHead>
-                  <TableHead className="py-4 text-center font-semibold">
+              <TableHeader className="bg-muted/50">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="h-10 text-[11px] font-bold uppercase tracking-wider">
+                    Date
+                  </TableHead>
+                  <TableHead className="h-10 text-center text-[11px] font-bold uppercase tracking-wider">
                     Shift A
                   </TableHead>
-                  <TableHead className="py-4 text-center font-semibold">
+                  <TableHead className="h-10 text-center text-[11px] font-bold uppercase tracking-wider">
                     Shift B
                   </TableHead>
-                  <TableHead className="py-4 text-center font-semibold">
+                  <TableHead className="h-10 text-center text-[11px] font-bold uppercase tracking-wider">
                     Shift C
                   </TableHead>
-                  <TableHead className="py-4 text-center font-semibold">
-                    Diesel Stock
+                  <TableHead className="h-10 text-center text-[11px] font-bold uppercase tracking-wider">
+                    Diesel
                   </TableHead>
-                  <TableHead className="py-4 text-center font-semibold">
-                    Octane Stock
+                  <TableHead className="h-10 text-center text-[11px] font-bold uppercase tracking-wider">
+                    Octane
                   </TableHead>
-                  <TableHead className="py-4 text-center font-semibold">
-                    Invoice
+                  <TableHead className="h-10 text-right text-[11px] font-bold uppercase tracking-wider">
+                    Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableSkeleton rows={6} />
+                  <TableSkeleton rows={5} />
                 ) : logs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-72">
-                      <div className="flex flex-col items-center justify-center gap-4 text-center">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-muted-foreground">
-                          {date ? (
-                            <Search className="h-7 w-7" />
-                          ) : (
-                            <FileText className="h-7 w-7" />
-                          )}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-lg font-semibold text-foreground">
-                            No logs found
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {date
-                              ? "Try another date to locate the required report."
-                              : "Records will appear here once daily entries are created."}
-                          </p>
-                        </div>
+                    <TableCell colSpan={7} className="h-48">
+                      <div className="flex flex-col items-center justify-center gap-2 text-center">
+                        <Search className="h-8 w-8 text-muted-foreground/40" />
+                        <p className="text-sm font-medium text-muted-foreground">
+                          No logs found
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
                   logs.map((log) => (
-                    <TableRow
-                      key={log._id}
-                      className="border-border/60 hover:bg-secondary/35"
-                    >
-                      <TableCell className="py-4 font-medium text-foreground">
-                        {format(new Date(log.date), "MMM dd, yyyy")}
+                    <TableRow key={log._id} className="group hover:bg-muted/30">
+                      <TableCell className="py-3 text-sm font-medium">
+                        {format(new Date(log.date), "dd MMM yyyy")}
                       </TableCell>
-                      <TableCell className="py-4 text-center font-mono text-sm text-foreground/85">
-                        {Number(log.shifts.a.sale).toLocaleString()} m³
+                      <TableCell className="py-3 text-center font-mono">
+                        {Number(log.shifts.a.sale).toLocaleString()}
                       </TableCell>
-                      <TableCell className="py-4 text-center font-mono text-sm text-foreground/85">
-                        {Number(log.shifts.b.sale).toLocaleString()} m³
+                      <TableCell className="py-3 text-center font-mono">
+                        {Number(log.shifts.b.sale).toLocaleString()}
                       </TableCell>
-                      <TableCell className="py-4 text-center font-mono text-sm text-foreground/85">
-                        {Number(log.shifts.c.sale).toLocaleString()} m³
+                      <TableCell className="py-3 text-center font-mono">
+                        {Number(log.shifts.c.sale).toLocaleString()}
                       </TableCell>
-                      <TableCell className="py-4 text-center font-mono text-sm text-[#0c7866]">
-                        {Number(log.dieselClosing).toLocaleString()} L
+                      <TableCell className="py-3 text-center font-mono text-[#0c7866]">
+                        {Number(log.dieselClosing).toLocaleString()}L
                       </TableCell>
-                      <TableCell className="py-4 text-center font-mono text-sm text-[#bc954e]">
-                        {Number(log.octaneClosing).toLocaleString()} L
+                      <TableCell className="py-3 text-center font-mono text-[#bc954e]">
+                        {Number(log.octaneClosing).toLocaleString()}L
                       </TableCell>
-                      <TableCell className="py-4">
-                        <div className="flex justify-center">
-                          <Button
-                            onClick={() => handleShowInvoice(log)}
-                            className="rounded-full px-4"
-                            size="sm"
-                          >
-                            <Download className="h-4 w-4" />
-                            Open
-                          </Button>
-                        </div>
+                      <TableCell className="py-3 text-right">
+                        <Button
+                          onClick={() => handleShowInvoice(log)}
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 rounded-full bg-primary/5 px-3 text-[11px] font-bold text-primary hover:bg-primary hover:text-white"
+                        >
+                          <Download className="mr-1 h-3 w-3" />
+                          INVOICE
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -295,31 +251,38 @@ export default function LogsPage() {
           </div>
 
           {!isLoading && logs.length > 0 && (
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
-                Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+            <div className="flex items-center justify-between border-t border-border/70 p-4">
+              <p className="text-[11px] font-medium text-muted-foreground">
+                Showing{" "}
+                {Math.min(
+                  pagination.total,
+                  (pagination.page - 1) * pagination.limit + 1,
+                )}{" "}
+                -{" "}
                 {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
-                of {pagination.total.toLocaleString()} entries
+                of {pagination.total}
               </p>
 
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <Button
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page <= 1}
                   variant="outline"
-                  className="rounded-full border-white/80 bg-white/80 px-4"
+                  size="sm"
+                  className="h-8 rounded-full px-3 text-[11px]"
                 >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
+                  <ChevronLeft className="mr-1 h-3 w-3" />
+                  Prev
                 </Button>
                 <Button
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page >= pagination.totalPages}
                   variant="outline"
-                  className="rounded-full border-white/80 bg-white/80 px-4"
+                  size="sm"
+                  className="h-8 rounded-full px-3 text-[11px]"
                 >
                   Next
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </div>
             </div>
@@ -342,25 +305,26 @@ function DatePicker({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
+          size="sm"
           className={cn(
-            "h-11 min-w-55 justify-start rounded-full border-white/80 bg-white/80 px-4 text-left font-normal",
+            "h-8 min-w-36 justify-start rounded-lg border-white/50 bg-white/80 px-3 text-left text-[11px] font-bold uppercase tracking-tight",
             !date && "text-muted-foreground",
           )}
         >
-          <CalendarIcon className="mr-3 h-4 w-4" />
-          {date ? format(date, "PPP") : "Filter by report date"}
+          <CalendarIcon className="mr-2 h-3 w-3" />
+          {date ? format(date, "dd MMM yyyy") : "Filter by date"}
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-auto rounded-[1.25rem] border-white/80 p-0"
-        align="end"
+        className="w-auto rounded-xl border-white/80 p-0 shadow-2xl"
+        align="start"
       >
         <Calendar
           mode="single"
           selected={date}
           onSelect={onDateChange}
           initialFocus
-          className="rounded-[1.25rem] bg-white p-3"
+          className="rounded-xl bg-white p-2"
         />
       </PopoverContent>
     </Popover>
@@ -369,9 +333,11 @@ function DatePicker({
 
 function TopMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.4rem] border border-white/70 bg-white/75 p-4 shadow-[0_18px_50px_-40px_rgba(15,23,42,0.55)]">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-2 font-mono text-2xl font-semibold tracking-tight text-foreground">
+    <div className="rounded-xl border border-white/70 bg-white/75 px-3 py-1.5 shadow-sm min-w-20 text-center">
+      <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground leading-none">
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-sm font-bold tracking-tight text-foreground leading-none">
         {value}
       </p>
     </div>
@@ -383,26 +349,26 @@ function TableSkeleton({ rows }: { rows: number }) {
     <>
       {Array.from({ length: rows }).map((_, index) => (
         <TableRow key={index} className="border-border/60">
-          <TableCell className="py-4">
-            <Skeleton className="h-5 w-28 rounded-full" />
+          <TableCell className="py-3">
+            <Skeleton className="h-4 w-20 rounded-full" />
           </TableCell>
-          <TableCell className="py-4">
-            <Skeleton className="mx-auto h-5 w-16 rounded-full" />
+          <TableCell className="py-3">
+            <Skeleton className="mx-auto h-4 w-12 rounded-full" />
           </TableCell>
-          <TableCell className="py-4">
-            <Skeleton className="mx-auto h-5 w-16 rounded-full" />
+          <TableCell className="py-3">
+            <Skeleton className="mx-auto h-4 w-12 rounded-full" />
           </TableCell>
-          <TableCell className="py-4">
-            <Skeleton className="mx-auto h-5 w-16 rounded-full" />
+          <TableCell className="py-3">
+            <Skeleton className="mx-auto h-4 w-12 rounded-full" />
           </TableCell>
-          <TableCell className="py-4">
-            <Skeleton className="mx-auto h-5 w-20 rounded-full" />
+          <TableCell className="py-3">
+            <Skeleton className="mx-auto h-4 w-16 rounded-full" />
           </TableCell>
-          <TableCell className="py-4">
-            <Skeleton className="mx-auto h-5 w-20 rounded-full" />
+          <TableCell className="py-3">
+            <Skeleton className="mx-auto h-4 w-16 rounded-full" />
           </TableCell>
-          <TableCell className="py-4">
-            <Skeleton className="mx-auto h-9 w-24 rounded-full" />
+          <TableCell className="py-3 text-right">
+            <Skeleton className="ml-auto h-7 w-20 rounded-full" />
           </TableCell>
         </TableRow>
       ))}
