@@ -14,7 +14,12 @@ import { SHIFT_LABELS } from "@/src/utils/constans";
 import { generateInvoiceData } from "@/src/utils/generate-invoice-data";
 import { InvoiceData } from "@/src/types";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Form } from "@/src/components/ui/form";
 import {
@@ -24,6 +29,7 @@ import {
   ShiftCard,
   ShiftInput,
 } from "@/src/utils/from-input";
+import { Badge } from "../../ui/badge";
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -87,7 +93,7 @@ export default function DailyReportForm() {
 
   return (
     <div className="page-shell space-y-6">
-      <Card className="glass-panel overflow-hidden border-white/70 bg-white/82">
+      <Card className="glass-panel overflow-hidden border-white/70 bg-white/82 p-0">
         <CardHeader className="gap-4 border-b border-border/70 p-5">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="space-y-1">
@@ -110,9 +116,13 @@ export default function DailyReportForm() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-5">
+        <CardContent className="px-5">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" noValidate>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
+              noValidate
+            >
               <CNGShiftsSection form={form} />
               <FuelSalesSection form={form} />
 
@@ -123,7 +133,8 @@ export default function DailyReportForm() {
                       Finalize & generate invoice
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Review all values before saving. The station invoice will open automatically.
+                      Review all values before saving. The station invoice will
+                      open automatically.
                     </p>
                   </div>
 
@@ -133,7 +144,9 @@ export default function DailyReportForm() {
                     className="h-10 rounded-full px-6 text-xs shadow-lg"
                   >
                     <Send className="mr-2 h-3.5 w-3.5" />
-                    {isSubmitting ? "Generating..." : "Save and generate invoice"}
+                    {isSubmitting
+                      ? "Generating..."
+                      : "Save and generate invoice"}
                   </Button>
                 </div>
               </div>
@@ -145,12 +158,13 @@ export default function DailyReportForm() {
   );
 }
 
-function CNGShiftsSection({ form }: { form: ReturnType<typeof useForm<FormValues>> }) {
+function CNGShiftsSection({
+  form,
+}: {
+  form: ReturnType<typeof useForm<FormValues>>;
+}) {
   return (
-    <Section
-      title="CNG performance"
-      compact
-    >
+    <Section title="CNG performance" compact>
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
         {(["a", "b", "c"] as const).map((shift) => (
           <ShiftCard key={shift} title={SHIFT_LABELS[shift]} compact>
@@ -173,12 +187,13 @@ function CNGShiftsSection({ form }: { form: ReturnType<typeof useForm<FormValues
   );
 }
 
-function FuelSalesSection({ form }: { form: ReturnType<typeof useForm<FormValues>> }) {
+function FuelSalesSection({
+  form,
+}: {
+  form: ReturnType<typeof useForm<FormValues>>;
+}) {
   return (
-    <Section
-      title="Fuel & stock"
-      compact
-    >
+    <Section title="Fuel & stock" compact>
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
         {(["a", "b", "c"] as const).map((shift) => (
           <ShiftCard key={shift} title={SHIFT_LABELS[shift]} compact>
@@ -217,7 +232,12 @@ function FuelSalesSection({ form }: { form: ReturnType<typeof useForm<FormValues
           label="D+O due (taka)"
           placeholder="0.00"
         />
-        <FormInput control={form.control} name="lpg" label="LPG amount (taka)" placeholder="0.00" />
+        <FormInput
+          control={form.control}
+          name="lpg"
+          label="LPG amount (taka)"
+          placeholder="0.00"
+        />
         <FormInput
           control={form.control}
           name="lpgClosing"
@@ -244,8 +264,12 @@ function SummaryChip({
       <div className="flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 text-primary" />
         <div>
-          <p className="text-[10px] uppercase font-bold text-muted-foreground leading-none">{label}</p>
-          <p className="mt-1 font-mono text-xs font-bold text-foreground leading-none">{value}</p>
+          <p className="text-[10px] uppercase font-bold text-muted-foreground leading-none">
+            {label}
+          </p>
+          <p className="mt-1 font-mono text-xs font-bold text-foreground leading-none">
+            {value}
+          </p>
         </div>
       </div>
     </div>
